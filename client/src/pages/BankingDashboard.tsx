@@ -409,7 +409,11 @@ export default function BankingDashboard() {
     : 0;
   const sessionGeminiUsage = transactionHistory.length > 0
     ? (transactionHistory.filter(tx =>
-        tx.geminiAnalysis && !tx.geminiAnalysis.includes("indisponible") && !tx.geminiAnalysis.includes("manquante")
+        tx.geminiAnalysis && 
+        !tx.geminiAnalysis.includes("indisponible") && 
+        !tx.geminiAnalysis.includes("manquante") &&
+        !tx.geminiAnalysis.includes("non disponible") &&
+        !tx.geminiAnalysis.includes("Erreur")
       ).length / transactionHistory.length * 100)
     : 0;
   const sessionConfidence = transactionHistory.length > 0
@@ -630,10 +634,16 @@ export default function BankingDashboard() {
                 <p className="text-sm text-gray-400">Raison</p>
                 <p className="text-sm text-gray-200">{currentTransaction.reason}</p>
               </div>
-              {currentTransaction.geminiAnalysis && !currentTransaction.geminiAnalysis.includes("indisponible") && !currentTransaction.geminiAnalysis.includes("manquante") && (
+              {currentTransaction.geminiAnalysis && (
                 <div>
                   <p className="text-sm text-gray-400">Analyse Gemini AI</p>
-                  <p className="text-sm text-gray-200 italic bg-indigo-900/30 p-3 rounded-lg border border-indigo-500/30">
+                  <p className={`text-sm italic p-3 rounded-lg border ${
+                    currentTransaction.geminiAnalysis.includes("indisponible") || 
+                    currentTransaction.geminiAnalysis.includes("manquante") ||
+                    currentTransaction.geminiAnalysis.includes("non disponible")
+                      ? "text-gray-400 bg-slate-900/30 border-slate-700"
+                      : "text-gray-200 bg-indigo-900/30 border-indigo-500/30"
+                  }`}>
                     {currentTransaction.geminiAnalysis}
                   </p>
                 </div>

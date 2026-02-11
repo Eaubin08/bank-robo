@@ -219,3 +219,9 @@
 - [x] Utilisation Gemini : calculé en temps réel (% de transactions avec analyse Gemini non-vide)
 - [x] Confiance : score ontologique moyen de la session en cours (94.3%)
 - [x] Toutes les sections Gemini utilisent les données de la session frontend via mutations tRPC
+
+## Bug : 3 problèmes restants (session 11 Feb)
+
+- [x] Incohérence chiffres : résolu en synchronisant les compteurs (transactionCount utilisé partout)
+- [x] Utilisation Gemini : calcul corrigé pour exclure "indisponible", "manquante", "non disponible", "Erreur"
+- [x] Analyse Gemini : réaffichée dans "Décision Actuelle" avec style grisé quand indisponible
