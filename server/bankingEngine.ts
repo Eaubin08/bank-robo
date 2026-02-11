@@ -3,8 +3,8 @@
  * Autonomous decision-making system with Gemini AI integration
  */
 
-import { invokeLLM } from "./_core/llm";
 import type { Scenario } from "./scenarios";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface DecisionResult {
   decision: "AUTORISER" | "ANALYSER" | "BLOQUER";
@@ -83,6 +83,15 @@ function calculateOntologicalTests(
  */
 async function analyzeWithGemini(scenario: Scenario, metrics: DecisionResult["metrics"]): Promise<string> {
   try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.warn("[Gemini] API key not configured");
+      return "Analyse Gemini non disponible (clé API manquante)";
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
     const prompt = `Tu es un système d'IA bancaire autonome qui analyse les transactions.
 
 **Transaction à analyser:**
@@ -106,24 +115,11 @@ Mentionne les facteurs clés qui influencent ta décision.
 
 Réponds en français, de manière professionnelle et claire.`;
 
-    const response = await invokeLLM({
-      messages: [
-        {
-          role: "system",
-          content: "Tu es un expert en sécurité bancaire et en analyse de transactions. Tu fournis des analyses claires et concises.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-    });
-
-    const content = response.choices[0]?.message?.content;
-    if (typeof content === "string") {
-      return content;
-    }
-    return "Analyse Gemini non disponible";
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return text || "Analyse Gemini non disponible";
   } catch (error) {
     console.error("[Gemini] Error analyzing transaction:", error);
     return "Analyse Gemini temporairement indisponible";

@@ -39,7 +39,7 @@
 - [x] Créer le guide de présentation jury (dans README)
 - [x] Créer le document de positionnement "Future of Work" (dans README)
 - [x] Tester l'application complète
-- [ ] Créer le checkpoint final
+- [x] Créer le checkpoint final
 
 ## Conformité Hackathon
 
@@ -96,4 +96,19 @@
 - [x] Créer VIDEO_SCRIPT.md pour la démo de 2-3 minutes
 - [x] Créer TWITTER_POST.md avec le post X/Twitter préparé
 - [x] Pousser tous les changements sur GitHub
-- [ ] Créer le checkpoint final
+- [x] Créer le checkpoint final
+
+## Déploiement Vultr (Exigence Hackathon)
+
+- [ ] Créer la VM Vultr (Ubuntu 22.04)
+- [ ] Configurer le firewall et les ports (3000, 22, 80, 443)
+- [ ] Installer Node.js 22.x et pnpm
+- [ ] Cloner le repository GitHub sur la VM
+- [ ] Configurer les variables d'environnement (.env)
+- [ ] Installer les dépendances (pnpm install)
+- [ ] Configurer la base de données MySQL/TiDB
+- [ ] Lancer l'application en mode production
+- [ ] Tester l'URL Vultr
+- [ ] Mettre à jour README.md avec l'URL Vultr
+- [ ] Mettre à jour DEPLOYMENT.md avec les détails de la VM
+- [ ] Créer le checkpoint final avec URL Vultr
