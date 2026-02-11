@@ -171,3 +171,10 @@
 - [ ] Modifier drizzle.config.ts pour supporter SQLite automatiquement
 - [ ] Pousser sur GitHub
 - [ ] Tester le déploiement sur Vultr avec SQLite
+
+## Corrections Gemini AI et Métriques (post-déploiement Vultr)
+
+- [ ] Corriger Gemini AI pour qu'il utilise les vraies données de transactions (pas des données inventées)
+- [ ] Corriger les métriques pour qu'elles se mettent à jour correctement
+- [ ] Sauvegarder checkpoint stable avant modifications
+- [ ] Tester sur Manus puis pousser sur GitHub pour Vultr
