@@ -174,7 +174,14 @@
 
 ## Corrections Gemini AI et Métriques (post-déploiement Vultr)
 
-- [ ] Corriger Gemini AI pour qu'il utilise les vraies données de transactions (pas des données inventées)
-- [ ] Corriger les métriques pour qu'elles se mettent à jour correctement
-- [ ] Sauvegarder checkpoint stable avant modifications
-- [ ] Tester sur Manus puis pousser sur GitHub pour Vultr
+- [x] Corriger Gemini AI pour qu'il utilise les vraies données de transactions (clé API configurée)
+- [x] Corriger les métriques pour qu'elles se mettent à jour correctement (moyenne glissante)
+- [x] Sauvegarder checkpoint stable avant modifications
+- [x] Tester sur Manus puis pousser sur GitHub pour Vultr
+
+## Micro-définitions métriques
+
+- [x] Ajouter tooltips/définitions pour IR (Irreversibility Index)
+- [x] Ajouter tooltips/définitions pour CIZ (Conflict Zone Isolation)
+- [x] Ajouter tooltips/définitions pour DTS (Decision Time Sensitivity)
+- [x] Ajouter tooltips/définitions pour TSG (Total System Guard)
