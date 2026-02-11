@@ -161,7 +161,7 @@ function makeDecision(
     return {
       decision: "ANALYSER",
       reason: `Transaction en analyse : vérification manuelle requise (TSG: ${(metrics.tsg * 100).toFixed(0)}%)`,
-      roiContribution: Math.floor(scenario.sensors.amount * 100 * 0.5), // 50% du ROI normal
+      roiContribution: Math.floor(scenario.sensors.amount * 5 * 0.5), // 50% du ROI normal (réduit de 95%)
     };
   }
 
@@ -169,7 +169,7 @@ function makeDecision(
   return {
     decision: "AUTORISER",
     reason: `Transaction autorisée : ${scenario.description} - Profil sécurisé (Score: ${(avgOntologicalScore * 100).toFixed(1)}%)`,
-    roiContribution: Math.floor(scenario.sensors.amount * 100 * 2), // ROI basé sur le montant
+    roiContribution: Math.floor(scenario.sensors.amount * 10), // ROI basé sur le montant (réduit de 95%)
   };
 }
 

@@ -112,3 +112,12 @@
 - [ ] Mettre à jour README.md avec l'URL Vultr
 - [ ] Mettre à jour DEPLOYMENT.md avec les détails de la VM
 - [ ] Créer le checkpoint final avec URL Vultr
+
+## Améliorations prioritaires avant soumission hackathon
+
+- [x] Réduire le ROI de 95% dans bankingEngine.ts (lignes 206 et 214)
+- [x] Déplacer la section "Autonomous Banking Decision Robot" après les statistiques
+- [ ] Tester les modifications sur Vultr
+- [ ] Mettre à jour README.md avec URL Vultr finale
+- [ ] Mettre à jour DEPLOYMENT.md avec détails Vultr
+- [ ] Créer checkpoint final

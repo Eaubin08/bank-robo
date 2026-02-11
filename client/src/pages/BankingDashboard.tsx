@@ -437,6 +437,48 @@ export default function BankingDashboard() {
         </CardContent>
       </Card>
 
+      {/* Jury Explanation */}
+      <Card className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border-purple-500/50">
+        <CardHeader>
+          <CardTitle className="text-white text-2xl">🤖 Autonomous Banking Decision Robot</CardTitle>
+          <CardDescription className="text-gray-300 text-lg">
+            Future of Work | Track 3: Robotic Interaction and Task Execution
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-gray-200 space-y-4">
+          <p>
+            Ce système est un <strong>robot décisionnel autonome</strong> qui opère dans un environnement simulé de
+            transactions bancaires. Il démontre comment l'IA peut remplacer ou assister les analystes humains dans la
+            détection de fraude et la validation de transactions.
+          </p>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-slate-800/50 p-4 rounded-lg">
+              <h3 className="font-bold text-yellow-400 mb-2">👁️ Ce qu'il VOIT</h3>
+              <p className="text-sm">
+                Capteurs de métriques (IR, CIZ, DTS, TSG), patterns de transactions, données de compte
+              </p>
+            </div>
+            <div className="bg-slate-800/50 p-4 rounded-lg">
+              <h3 className="font-bold text-blue-400 mb-2">🧠 Ce qu'il PENSE</h3>
+              <p className="text-sm">
+                Analyse Gemini AI, 9 tests ontologiques, calcul de risque, raisonnement transparent
+              </p>
+            </div>
+            <div className="bg-slate-800/50 p-4 rounded-lg">
+              <h3 className="font-bold text-green-400 mb-2">✅ Ce qu'il CHOISIT</h3>
+              <p className="text-sm">
+                AUTORISER (83%), ANALYSER (4%), BLOQUER (13%) avec justification complète
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-gray-400 italic">
+            💡 Valeur Business: Réduction de 90% du temps de traitement, augmentation de 96% de la précision, ROI
+            mesurable en temps réel
+          </p>
+        </CardContent>
+      </Card>
+
+
       {/* Transaction History */}
       <Card className="bg-slate-800/50 border-purple-500/30 mb-6">
         <CardHeader>
@@ -523,46 +565,6 @@ export default function BankingDashboard() {
         </Card>
       </div>
 
-      {/* Jury Explanation */}
-      <Card className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 border-purple-500/50">
-        <CardHeader>
-          <CardTitle className="text-white text-2xl">🤖 Autonomous Banking Decision Robot</CardTitle>
-          <CardDescription className="text-gray-300 text-lg">
-            Future of Work | Track 3: Robotic Interaction and Task Execution
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-gray-200 space-y-4">
-          <p>
-            Ce système est un <strong>robot décisionnel autonome</strong> qui opère dans un environnement simulé de
-            transactions bancaires. Il démontre comment l'IA peut remplacer ou assister les analystes humains dans la
-            détection de fraude et la validation de transactions.
-          </p>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-slate-800/50 p-4 rounded-lg">
-              <h3 className="font-bold text-yellow-400 mb-2">👁️ Ce qu'il VOIT</h3>
-              <p className="text-sm">
-                Capteurs de métriques (IR, CIZ, DTS, TSG), patterns de transactions, données de compte
-              </p>
-            </div>
-            <div className="bg-slate-800/50 p-4 rounded-lg">
-              <h3 className="font-bold text-blue-400 mb-2">🧠 Ce qu'il PENSE</h3>
-              <p className="text-sm">
-                Analyse Gemini AI, 9 tests ontologiques, calcul de risque, raisonnement transparent
-              </p>
-            </div>
-            <div className="bg-slate-800/50 p-4 rounded-lg">
-              <h3 className="font-bold text-green-400 mb-2">✅ Ce qu'il CHOISIT</h3>
-              <p className="text-sm">
-                AUTORISER (83%), ANALYSER (4%), BLOQUER (13%) avec justification complète
-              </p>
-            </div>
-          </div>
-          <p className="text-sm text-gray-400 italic">
-            💡 Valeur Business: Réduction de 90% du temps de traitement, augmentation de 96% de la précision, ROI
-            mesurable en temps réel
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }
