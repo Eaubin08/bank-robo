@@ -158,18 +158,29 @@ export default function BankingDashboard() {
   });
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Track real response times
+  const [responseTimes, setResponseTimes] = useState<number[]>([]);
+  const avgResponseTime = responseTimes.length > 0
+    ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+    : 0;
 
   const processTransactionMutation = trpc.banking.processTransaction.useMutation();
   
-  // Gemini Performance Insights (auto-refresh every 30s)
-  const { data: performanceInsights, refetch: refetchInsights } = trpc.banking.getPerformanceInsights.useQuery(undefined, {
-    refetchInterval: 30000,
-  });
+  // Gemini Performance Insights (session-based, on-demand via mutation)
+  const insightsMutation = trpc.banking.getPerformanceInsights.useMutation();
+  const [performanceInsights, setPerformanceInsights] = useState<{
+    summary: string;
+    trends: string[];
+    recommendations: string[];
+    metrics: { accuracyRate: number; avgResponseTime: number; geminiUsageRate: number; confidenceScore: number };
+  } | null>(null);
+  const insightsTimerRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Gemini Continuous Trends (auto-refresh every 15s)
-  const { data: continuousTrends, refetch: refetchTrends } = trpc.banking.analyzeTrends.useQuery(undefined, {
-    refetchInterval: 15000,
-  });
+  // Gemini Continuous Trends (session-based, on-demand via mutation)
+  const trendsMutation = trpc.banking.analyzeTrends.useMutation();
+  const [continuousTrends, setContinuousTrends] = useState<string[] | null>(null);
+  const trendsTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Gemini Detailed Report (on-demand)
   const generateReportMutation = trpc.banking.generateReport.useMutation();
@@ -177,9 +188,20 @@ export default function BankingDashboard() {
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   
   const handleGenerateReport = async () => {
+    if (transactionHistory.length === 0) return;
     setIsGeneratingReport(true);
     try {
-      const report = await generateReportMutation.mutateAsync();
+      const report = await generateReportMutation.mutateAsync({
+        sessionTransactions: transactionHistory.map(tx => ({
+          decision: tx.decision,
+          reason: tx.reason,
+          geminiAnalysis: tx.geminiAnalysis,
+          metrics: tx.metrics,
+          ontologicalTests: tx.ontologicalTests,
+          roiContribution: tx.roiContribution,
+        })),
+        avgResponseTimeMs: avgResponseTime,
+      });
       setDetailedReport(report);
     } catch (error) {
       console.error("Error generating report:", error);
@@ -189,10 +211,68 @@ export default function BankingDashboard() {
     }
   };
 
+  // Auto-refresh insights every 30s when running
+  useEffect(() => {
+    if (!isRunning && !isPaused) return;
+    if (transactionHistory.length < 10) return;
+    
+    const fetchInsights = async () => {
+      try {
+        const result = await insightsMutation.mutateAsync({
+          sessionTransactions: transactionHistory.map(tx => ({
+            decision: tx.decision,
+            reason: tx.reason,
+            geminiAnalysis: tx.geminiAnalysis,
+            metrics: tx.metrics,
+            ontologicalTests: tx.ontologicalTests,
+            roiContribution: tx.roiContribution,
+          })),
+          totalSessionCount: transactionCount,
+          avgResponseTimeMs: avgResponseTime,
+        });
+        setPerformanceInsights(result);
+      } catch (e) { console.error("Insights error:", e); }
+    };
+    
+    fetchInsights(); // fetch immediately
+    insightsTimerRef.current = setInterval(fetchInsights, 30000);
+    return () => { if (insightsTimerRef.current) clearInterval(insightsTimerRef.current); };
+  }, [isRunning, isPaused, transactionCount >= 10 ? Math.floor(transactionCount / 10) : 0]);
+
+  // Auto-refresh trends every 15s when running
+  useEffect(() => {
+    if (!isRunning && !isPaused) return;
+    if (transactionHistory.length < 5) return;
+    
+    const fetchTrends = async () => {
+      try {
+        const result = await trendsMutation.mutateAsync({
+          recentTransactions: transactionHistory.slice(-10).map(tx => ({
+            decision: tx.decision,
+            reason: tx.reason,
+            geminiAnalysis: tx.geminiAnalysis,
+            metrics: tx.metrics,
+            ontologicalTests: tx.ontologicalTests,
+            roiContribution: tx.roiContribution,
+          })),
+        });
+        setContinuousTrends(result);
+      } catch (e) { console.error("Trends error:", e); }
+    };
+    
+    fetchTrends(); // fetch immediately
+    trendsTimerRef.current = setInterval(fetchTrends, 15000);
+    return () => { if (trendsTimerRef.current) clearInterval(trendsTimerRef.current); };
+  }, [isRunning, isPaused, transactionCount >= 5 ? Math.floor(transactionCount / 5) : 0]);
+
   // Process a single transaction
   const processTransaction = async () => {
     try {
+      const startTime = performance.now();
       const result = await processTransactionMutation.mutateAsync({});
+      const endTime = performance.now();
+      const responseTime = endTime - startTime;
+      setResponseTimes(prev => [...prev.slice(-99), responseTime]);
 
       setCurrentTransaction(result);
       setTotalROI((prev) => prev + result.roiContribution);
@@ -259,6 +339,7 @@ export default function BankingDashboard() {
     setDecisionCounts({ AUTORISER: 0, ANALYSER: 0, BLOQUER: 0 });
     setMetricsHistory([]);
     setTransactionHistory([]);
+    setResponseTimes([]);
     setOntologicalScores({
       timeIsLaw: 0,
       absoluteHoldGate: 0,
@@ -271,6 +352,10 @@ export default function BankingDashboard() {
       emergentBehaviorWatch: 0,
     });
     setDetailedReport(null);
+    setPerformanceInsights(null);
+    setContinuousTrends(null);
+    if (insightsTimerRef.current) clearInterval(insightsTimerRef.current);
+    if (trendsTimerRef.current) clearInterval(trendsTimerRef.current);
   };
 
   // Export CSV
@@ -309,11 +394,30 @@ export default function BankingDashboard() {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (insightsTimerRef.current) clearInterval(insightsTimerRef.current);
+      if (trendsTimerRef.current) clearInterval(trendsTimerRef.current);
     };
   }, []);
+
+  // Calculate real session metrics for the 4 cards
+  const sessionAccuracy = transactionHistory.length > 0
+    ? (transactionHistory.filter(tx => {
+        const avg = Object.values(tx.ontologicalTests).reduce((a, b) => a + b, 0) / 9;
+        return avg >= 0.94;
+      }).length / transactionHistory.length * 100)
+    : 0;
+  const sessionGeminiUsage = transactionHistory.length > 0
+    ? (transactionHistory.filter(tx =>
+        tx.geminiAnalysis && !tx.geminiAnalysis.includes("indisponible") && !tx.geminiAnalysis.includes("manquante")
+      ).length / transactionHistory.length * 100)
+    : 0;
+  const sessionConfidence = transactionHistory.length > 0
+    ? (transactionHistory.reduce((sum, tx) => {
+        const avg = Object.values(tx.ontologicalTests).reduce((a, b) => a + b, 0) / 9;
+        return sum + avg;
+      }, 0) / transactionHistory.length * 100)
+    : 0;
 
   // Calculate average ontological precision
   const avgOntologicalPrecision = transactionCount > 0
@@ -639,7 +743,7 @@ export default function BankingDashboard() {
       </div>
 
       {/* Gemini Performance Insights */}
-      {performanceInsights && performanceInsights.summary && !performanceInsights.summary.startsWith("En attente") && (
+      {transactionCount >= 10 && performanceInsights && performanceInsights.summary && !performanceInsights.summary.startsWith("En attente") && (
         <Card className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-indigo-500/50 mb-6">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
@@ -647,7 +751,7 @@ export default function BankingDashboard() {
               Performance Insights (Gemini AI)
             </CardTitle>
             <CardDescription className="text-gray-300">
-              Résumé automatique basé sur les données réelles de la base
+              Résumé automatique basé sur les {transactionCount} transactions de cette session
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -685,29 +789,57 @@ export default function BankingDashboard() {
             )}
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-green-900/30 p-3 rounded-lg border border-green-500/50">
-                <div className="text-green-400 text-xs font-semibold mb-1">Précision</div>
-                <div className="text-white text-2xl font-bold">{performanceInsights.metrics.accuracyRate.toFixed(1)}%</div>
-              </div>
-              <div className="bg-blue-900/30 p-3 rounded-lg border border-blue-500/50">
-                <div className="text-blue-400 text-xs font-semibold mb-1">Temps Moyen</div>
-                <div className="text-white text-2xl font-bold">{performanceInsights.metrics.avgResponseTime}ms</div>
-              </div>
-              <div className="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
-                <div className="text-purple-400 text-xs font-semibold mb-1">Utilisation Gemini</div>
-                <div className="text-white text-2xl font-bold">{performanceInsights.metrics.geminiUsageRate.toFixed(1)}%</div>
-              </div>
-              <div className="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
-                <div className="text-yellow-400 text-xs font-semibold mb-1">Confiance</div>
-                <div className="text-white text-2xl font-bold">{performanceInsights.metrics.confidenceScore.toFixed(1)}%</div>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="bg-green-900/30 p-3 rounded-lg border border-green-500/50 cursor-help">
+                    <div className="text-green-400 text-xs font-semibold mb-1">Précision</div>
+                    <div className="text-white text-2xl font-bold">{sessionAccuracy.toFixed(1)}%</div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 text-white border border-green-500/50 p-2 max-w-xs">
+                  <p className="text-xs">% de transactions avec un score ontologique moyen ≥ 94% (seuil de fiabilité). Calculé sur les {transactionCount} transactions de cette session.</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="bg-blue-900/30 p-3 rounded-lg border border-blue-500/50 cursor-help">
+                    <div className="text-blue-400 text-xs font-semibold mb-1">Temps Moyen</div>
+                    <div className="text-white text-2xl font-bold">{Math.round(avgResponseTime)}ms</div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 text-white border border-blue-500/50 p-2 max-w-xs">
+                  <p className="text-xs">Temps de réponse réel moyen du backend (mesuré sur {responseTimes.length} appels). Inclut le traitement + analyse Gemini.</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50 cursor-help">
+                    <div className="text-purple-400 text-xs font-semibold mb-1">Utilisation Gemini</div>
+                    <div className="text-white text-2xl font-bold">{sessionGeminiUsage.toFixed(1)}%</div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 text-white border border-purple-500/50 p-2 max-w-xs">
+                  <p className="text-xs">% de transactions où l'analyse Gemini AI a répondu avec succès (hors erreurs/rate-limit).</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50 cursor-help">
+                    <div className="text-yellow-400 text-xs font-semibold mb-1">Confiance</div>
+                    <div className="text-white text-2xl font-bold">{sessionConfidence.toFixed(1)}%</div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 text-white border border-yellow-500/50 p-2 max-w-xs">
+                  <p className="text-xs">Score de confiance moyen des 9 tests ontologiques sur cette session. Plus c'est élevé, plus le robot est fiable.</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Gemini Continuous Trends */}
-      {continuousTrends && continuousTrends.length > 0 && continuousTrends[0] !== "Pas assez de données pour détecter des tendances" && (
+      {transactionCount >= 5 && continuousTrends && continuousTrends.length > 0 && continuousTrends[0] !== "Pas assez de données pour détecter des tendances" && (
         <Card className="bg-gradient-to-r from-cyan-900/50 to-blue-900/50 border-cyan-500/50 mb-6">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
@@ -715,7 +847,7 @@ export default function BankingDashboard() {
               Analyse Continue (Gemini AI)
             </CardTitle>
             <CardDescription className="text-gray-300">
-              Insights en temps réel sur les 10 dernières transactions
+              Insights en temps réel sur les {Math.min(10, transactionCount)} dernières transactions de cette session
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -739,7 +871,7 @@ export default function BankingDashboard() {
             Rapport Détaillé (Gemini AI)
           </CardTitle>
           <CardDescription className="text-gray-300">
-            Générez un rapport complet de performance à la demande
+            Générez un rapport basé sur les {transactionCount} transactions de cette session
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -905,8 +1037,7 @@ export default function BankingDashboard() {
           </div>
 
           <p className="text-sm text-gray-400 italic">
-            Valeur Business: Réduction de 90% du temps de traitement, augmentation de 96% de la précision, ROI
-            mesurable en temps réel
+            Valeur Business: Temps de réponse réel de {Math.round(avgResponseTime)}ms, précision de {sessionAccuracy.toFixed(1)}%, ROI mesurable en temps réel
           </p>
         </CardContent>
       </Card>

@@ -204,7 +204,8 @@ export interface PerformanceInsights {
  */
 export async function generatePerformanceInsights(
   transactionHistory: DecisionResult[],
-  totalTransactions: number
+  totalTransactions: number,
+  avgResponseTimeMs: number = 0
 ): Promise<PerformanceInsights> {
   // Calculate real metrics from actual data
   const correctDecisions = transactionHistory.filter(tx => {
@@ -238,7 +239,7 @@ export async function generatePerformanceInsights(
 
 RÈGLE ABSOLUE : Tu dois utiliser UNIQUEMENT les chiffres exacts fournis ci-dessous. NE JAMAIS inventer, arrondir différemment, ou ajouter des données qui ne sont pas listées ici.
 
-DONNÉES RÉELLES EXACTES (${totalTransactions} transactions au total, analyse sur les ${transactionHistory.length} dernières) :
+DONNÉES RÉELLES EXACTES (analyse sur les ${transactionHistory.length} dernières transactions de la session, ${totalTransactions} au total dans cette session) :
 - Taux de précision réel : ${accuracyRate.toFixed(1)}%
 - Score de confiance moyen réel : ${avgConfidence.toFixed(1)}%
 - Transactions autorisées : ${decisionStats.AUTORISER} (${(decisionStats.AUTORISER/transactionHistory.length*100).toFixed(1)}%)
@@ -277,7 +278,7 @@ Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après :
         recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [],
         metrics: {
           accuracyRate,
-          avgResponseTime: 150,
+          avgResponseTime: Math.round(avgResponseTimeMs),
           geminiUsageRate,
           confidenceScore: avgConfidence,
         },
@@ -289,7 +290,7 @@ Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après :
     console.error("[Gemini] Error generating performance insights:", error);
     // Fallback: generate insights without Gemini using real data
     return {
-      summary: `Sur ${totalTransactions} transactions, le robot a autorisé ${decisionStats.AUTORISER}, analysé ${decisionStats.ANALYSER} et bloqué ${decisionStats.BLOQUER}. Le taux de précision est de ${accuracyRate.toFixed(1)}% avec un score de confiance moyen de ${avgConfidence.toFixed(1)}%.`,
+      summary: `Sur les ${transactionHistory.length} dernières transactions (${totalTransactions} au total dans la session), le robot a autorisé ${decisionStats.AUTORISER}, analysé ${decisionStats.ANALYSER} et bloqué ${decisionStats.BLOQUER}. Le taux de précision est de ${accuracyRate.toFixed(1)}% avec un score de confiance moyen de ${avgConfidence.toFixed(1)}%.`,
       trends: [
         `${(decisionStats.AUTORISER/transactionHistory.length*100).toFixed(0)}% des transactions sont autorisées, indiquant un flux majoritairement sain.`,
         `Le TSG moyen est de ${(avgTSG*100).toFixed(1)}%, ce qui reflète un niveau de risque ${avgTSG < 0.3 ? 'faible' : avgTSG < 0.5 ? 'modéré' : 'élevé'}.`,
@@ -301,7 +302,7 @@ Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après :
       ],
       metrics: {
         accuracyRate,
-        avgResponseTime: 150,
+        avgResponseTime: Math.round(avgResponseTimeMs),
         geminiUsageRate,
         confidenceScore: avgConfidence,
       },
@@ -381,7 +382,8 @@ Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après :
  * Generate detailed performance report using Gemini AI (on-demand)
  */
 export async function generateDetailedReport(
-  transactionHistory: DecisionResult[]
+  transactionHistory: DecisionResult[],
+  avgResponseTimeMs: number = 0
 ): Promise<string> {
   // Calculate all real stats
   const total = transactionHistory.length;
@@ -427,27 +429,31 @@ MÉTRIQUES MOYENNES :
 TESTS ONTOLOGIQUES :
 - Score moyen des 9 tests : ${(avgOntological*100).toFixed(1)}%
 
+PERFORMANCE TECHNIQUE :
+- Temps de réponse moyen : ${Math.round(avgResponseTimeMs)}ms par transaction
+
 IMPACT FINANCIER :
 - ROI total : ${totalROI.toLocaleString('fr-FR')} €
 
 ═══════════════════════════════════════
 
-Rédige un rapport structuré en français avec ces 5 sections. Chaque section doit citer les chiffres exacts ci-dessus :
+Rédige un rapport structuré en français avec ces 6 sections. Chaque section doit citer les chiffres exacts ci-dessus :
 
 1. VUE D'ENSEMBLE : Résumé global (nombre de transactions, répartition des décisions)
 2. ANALYSE DES DÉCISIONS : Pourquoi ${(autoriser/total*100).toFixed(1)}% sont autorisées, ${(analyser/total*100).toFixed(1)}% en analyse, ${(bloquer/total*100).toFixed(1)}% bloquées
 3. ÉVALUATION DES RISQUES : Commentaire sur TSG moyen ${(avgTSG*100).toFixed(1)}%, IR moyen ${(avgIR*100).toFixed(1)}%, score ontologique ${(avgOntological*100).toFixed(1)}%
-4. IMPACT FINANCIER : ROI de ${totalROI.toLocaleString('fr-FR')} € et ce que cela signifie
-5. RECOMMANDATIONS : 2-3 recommandations basées sur les chiffres réels
+4. PERFORMANCE TECHNIQUE : Temps de réponse moyen de ${Math.round(avgResponseTimeMs)}ms
+5. IMPACT FINANCIER : ROI de ${totalROI.toLocaleString('fr-FR')} € et ce que cela signifie
+6. RECOMMANDATIONS : 2-3 recommandations basées sur les chiffres réels
 
 Format : texte structuré avec titres en majuscules. Pas de JSON. Pas de markdown.`;
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    return text || generateFallbackReport(total, autoriser, analyser, bloquer, avgTSG, avgIR, avgOntological, totalROI);
+    return text || generateFallbackReport(total, autoriser, analyser, bloquer, avgTSG, avgIR, avgOntological, totalROI, avgResponseTimeMs);
   } catch (error) {
     console.error("[Gemini] Error generating detailed report:", error);
-    return generateFallbackReport(total, autoriser, analyser, bloquer, avgTSG, avgIR, avgOntological, totalROI);
+    return generateFallbackReport(total, autoriser, analyser, bloquer, avgTSG, avgIR, avgOntological, totalROI, avgResponseTimeMs);
   }
 }
 
@@ -456,7 +462,8 @@ Format : texte structuré avec titres en majuscules. Pas de JSON. Pas de markdow
  */
 function generateFallbackReport(
   total: number, autoriser: number, analyser: number, bloquer: number,
-  avgTSG: number, avgIR: number, avgOntological: number, totalROI: number
+  avgTSG: number, avgIR: number, avgOntological: number, totalROI: number,
+  avgResponseTimeMs: number = 0
 ): string {
   return `VUE D'ENSEMBLE
 Le robot bancaire a traité ${total} transactions au total. ${autoriser} ont été autorisées (${(autoriser/total*100).toFixed(1)}%), ${analyser} sont en analyse (${(analyser/total*100).toFixed(1)}%) et ${bloquer} ont été bloquées (${(bloquer/total*100).toFixed(1)}%).
@@ -466,6 +473,9 @@ La majorité des transactions (${(autoriser/total*100).toFixed(1)}%) sont autori
 
 ÉVALUATION DES RISQUES
 Le TSG moyen (Garde Totale) est de ${(avgTSG*100).toFixed(1)}%, l'IR moyen (Irréversibilité) de ${(avgIR*100).toFixed(1)}%. Le score moyen des 9 tests ontologiques atteint ${(avgOntological*100).toFixed(1)}%, ce qui ${avgOntological >= 0.94 ? 'dépasse le seuil de fiabilité de 94%' : 'est en dessous du seuil optimal de 94%'}.
+
+PERFORMANCE TECHNIQUE
+Le temps de réponse moyen du robot est de ${Math.round(avgResponseTimeMs)}ms par transaction, ce qui démontre une capacité de traitement en temps réel adaptée aux exigences bancaires.
 
 IMPACT FINANCIER
 Le ROI total généré est de ${totalROI.toLocaleString('fr-FR')} €. Ce montant reflète la valeur ajoutée du traitement automatisé des transactions autorisées et partiellement des transactions en analyse.
