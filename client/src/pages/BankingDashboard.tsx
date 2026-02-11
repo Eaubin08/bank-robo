@@ -151,7 +151,7 @@ export default function BankingDashboard() {
     setIsRunning(false);
   };
 
-  // Stop simulation
+  // Stop simulation with full reset
   const stopSimulation = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -159,16 +159,28 @@ export default function BankingDashboard() {
     }
     setIsRunning(false);
     setIsPaused(false);
+    
+    // Reset all state
+    setTotalROI(0);
+    setTransactionCount(0);
+    setCurrentTransaction(null);
+    setDecisionCounts({ AUTORISER: 0, ANALYSER: 0, BLOQUER: 0 });
+    setMetricsHistory([]);
+    setTransactionHistory([]);
+    setOntologicalScores({
+      timeIsLaw: 0.96,
+      absoluteHoldGate: 0.96,
+      zeroToleranceFlag: 0.96,
+      irreversibilityIndex: 0.96,
+      conflictZoneIsolation: 0.96,
+      decisionTimeSensitivity: 0.96,
+      totalSystemGuard: 0.96,
+      negativeMemoryReflexes: 0.96,
+      emergentBehaviorWatch: 0.96,
+    });
   };
 
-  // Batch run
-  const runBatch = async (count: number) => {
-    stopSimulation();
-    for (let i = 0; i < count; i++) {
-      await processTransaction();
-      await new Promise((resolve) => setTimeout(resolve, 50)); // Small delay for UI updates
-    }
-  };
+
 
   // Export CSV
   const exportCSV = () => {
@@ -349,20 +361,7 @@ export default function BankingDashboard() {
 
             <div className="border-l border-gray-600 mx-2" />
 
-            <Button onClick={() => runBatch(10)} variant="outline">
-              Batch 10
-            </Button>
-            <Button onClick={() => runBatch(50)} variant="outline">
-              Batch 50
-            </Button>
-            <Button onClick={() => runBatch(100)} variant="outline">
-              Batch 100
-            </Button>
-            <Button onClick={() => runBatch(500)} variant="outline">
-              Batch 500
-            </Button>
 
-            <div className="border-l border-gray-600 mx-2" />
 
             <Button onClick={exportCSV} variant="outline">
               <Download className="mr-2 h-4 w-4" />

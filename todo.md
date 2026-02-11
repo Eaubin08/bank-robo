@@ -159,3 +159,9 @@
 - [ ] Tester localement
 - [ ] Pousser sur GitHub
 - [ ] Déployer sur Vultr
+
+## Amélioration UX - Simplification des contrôles
+
+- [x] Retirer les boutons Batch (10/50/100/500)
+- [x] Améliorer la logique Play/Pause/Stop avec états clairs
+- [x] Ajouter un vrai Reset sur Stop (ROI=0, compteurs=0, historique vidé)
