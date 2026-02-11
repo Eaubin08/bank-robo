@@ -752,9 +752,32 @@ export default function BankingDashboard() {
           </Button>
           
           {detailedReport && (
-            <div className="bg-slate-900/50 p-4 rounded-lg border border-emerald-500/30">
+            <div className="bg-slate-900/50 p-4 rounded-lg border border-emerald-500/30 space-y-4">
               <h3 className="text-emerald-400 font-semibold mb-3">Rapport de Performance</h3>
-              <div className="text-gray-200 whitespace-pre-wrap">{detailedReport}</div>
+              {detailedReport.split(/\n\n+/).map((section, i) => {
+                // Detect section headers (all caps lines)
+                const lines = section.trim().split('\n');
+                const firstLine = lines[0]?.trim() || '';
+                const isHeader = firstLine === firstLine.toUpperCase() && firstLine.length > 3 && !firstLine.startsWith('-') && !firstLine.startsWith('•');
+                
+                if (isHeader) {
+                  return (
+                    <div key={i}>
+                      <h4 className="text-yellow-400 font-bold text-sm uppercase tracking-wider mb-2 border-b border-yellow-500/30 pb-1">
+                        {firstLine}
+                      </h4>
+                      <p className="text-gray-200 text-sm leading-relaxed">
+                        {lines.slice(1).join(' ').trim()}
+                      </p>
+                    </div>
+                  );
+                }
+                return (
+                  <p key={i} className="text-gray-200 text-sm leading-relaxed">
+                    {section.trim()}
+                  </p>
+                );
+              })}
             </div>
           )}
         </CardContent>

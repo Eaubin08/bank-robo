@@ -131,21 +131,21 @@
 ## Enrichissement section Robot avec Gemini
 
 ### Backend
-- [ ] Créer fonction `generatePerformanceInsights()` pour résumé toutes les 20 transactions
-- [ ] Créer fonction `analyzeContinuousTrends()` pour analyse en temps réel
-- [ ] Créer fonction `generateDetailedReport()` pour rapport à la demande
-- [ ] Ajouter procédure tRPC `banking.getPerformanceInsights`
-- [ ] Ajouter procédure tRPC `banking.generateReport`
+- [x] Créer fonction `generatePerformanceInsights()` pour résumé toutes les 20 transactions
+- [x] Créer fonction `analyzeContinuousTrends()` pour analyse en temps réel
+- [x] Créer fonction `generateDetailedReport()` pour rapport à la demande
+- [x] Ajouter procédure tRPC `banking.getPerformanceInsights`
+- [x] Ajouter procédure tRPC `banking.generateReport`
 
 ### Frontend
-- [ ] Ajouter carte "Performance Insights" avec résumé Gemini
-- [ ] Ajouter section "Tendances Détectées" avec analyse continue
-- [ ] Ajouter bouton "Générer Rapport Gemini" avec modal
-- [ ] Ajouter compteur de performances (précision, temps de réponse, score de confiance)
-- [ ] Enrichir la section Robot avec ces nouvelles données
+- [x] Ajouter carte "Performance Insights" avec résumé Gemini
+- [x] Ajouter section "Tendances Détectées" avec analyse continue
+- [x] Ajouter bouton "Générer Rapport Gemini" avec modal
+- [x] Ajouter compteur de performances (précision, temps de réponse, score de confiance)
+- [x] Enrichir la section Robot avec ces nouvelles données
 
 ### Tests
-- [ ] Tester localement les 3 fonctionnalités Gemini
+- [x] Tester localement les 3 fonctionnalités Gemini
 - [ ] Déployer sur Vultr
 - [ ] Vérifier l'affichage et les performances
 
@@ -185,3 +185,20 @@
 - [x] Ajouter tooltips/définitions pour CIZ (Conflict Zone Isolation)
 - [x] Ajouter tooltips/définitions pour DTS (Decision Time Sensitivity)
 - [x] Ajouter tooltips/définitions pour TSG (Total System Guard)
+
+## Bug : Sections Gemini AI et Robot ne traitent pas les données
+
+- [x] Corriger "Performance Insights (Gemini AI)" - s'affiche avec données réelles
+- [x] Corriger "Analyse Continue (Gemini AI)" - traite les transactions réelles
+- [x] Corriger "Rapport Détaillé (Gemini AI)" - génère un rapport complet avec données réelles
+- [x] Corriger section "Autonomous Banking Decision Robot" - affiche correctement
+- [x] Tester toutes les sections après correction
+- [x] Pousser sur GitHub pour Vultr
+
+## Bug : Gemini invente des données dans les rapports
+
+- [x] Réécrire les prompts Gemini pour forcer l'utilisation stricte des données réelles
+- [x] Ajouter des instructions "NE PAS INVENTER" dans les prompts
+- [x] Injecter les chiffres exacts dans le prompt pour que Gemini ne puisse que les reformuler
+- [x] Tester les 3 fonctions Gemini (insights, trends, report)
+- [x] Pousser sur GitHub pour Vultr

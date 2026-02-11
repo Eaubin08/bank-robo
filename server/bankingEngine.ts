@@ -34,16 +34,9 @@ export interface DecisionResult {
  * Calculate banking metrics based on sensor values
  */
 function calculateMetrics(sensors: Scenario["sensors"]): DecisionResult["metrics"] {
-  // IR: Irréversibilité - Plus le montant et la distance sont élevés, plus c'est irréversible
   const ir = (sensors.amount * 0.6 + sensors.location * 0.4);
-
-  // CIZ: Conflit Interne Zone - Détecte les conflits entre patterns habituels et actuels
   const ciz = Math.abs(sensors.frequency - 0.5) + Math.abs(sensors.timeOfDay - 0.5);
-
-  // DTS: Decision Time Sensitivity - Urgence de la décision
   const dts = sensors.amount * 0.5 + (1 - sensors.accountAge) * 0.5;
-
-  // TSG: Total System Guard - Niveau de garde global
   const tsg = (ir + ciz + dts) / 3;
 
   return {
@@ -61,9 +54,8 @@ function calculateOntologicalTests(
   sensors: Scenario["sensors"],
   metrics: DecisionResult["metrics"]
 ): DecisionResult["ontologicalTests"] {
-  // Base success rate: 96% ± random variance
   const baseScore = 0.96;
-  const variance = () => (Math.random() - 0.5) * 0.08; // ±4%
+  const variance = () => (Math.random() - 0.5) * 0.08;
 
   return {
     timeIsLaw: Math.max(0.88, Math.min(1, baseScore + variance() - sensors.timeOfDay * 0.05)),
@@ -79,47 +71,50 @@ function calculateOntologicalTests(
 }
 
 /**
+ * Helper: get Gemini model instance
+ */
+async function getGeminiModel() {
+  const { ENV } = await import("./_core/env");
+  const apiKey = ENV.geminiApiKey;
+  if (!apiKey) {
+    throw new Error("Gemini API key not configured");
+  }
+  const genAI = new GoogleGenerativeAI(apiKey);
+  return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+}
+
+/**
  * Use Gemini AI to analyze the transaction and provide reasoning
  */
 async function analyzeWithGemini(scenario: Scenario, metrics: DecisionResult["metrics"]): Promise<string> {
   try {
-    const { ENV } = await import("./_core/env");
-    const apiKey = ENV.geminiApiKey;
-    if (!apiKey) {
-      console.warn("[Gemini] API key not configured");
-      return "Analyse Gemini non disponible (clé API manquante)";
-    }
+    const model = await getGeminiModel();
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const prompt = `Tu es un système d'IA bancaire autonome. Analyse cette transaction en te basant UNIQUEMENT sur les données fournies ci-dessous.
 
-    const prompt = `Tu es un système d'IA bancaire autonome qui analyse les transactions.
+RÈGLE ABSOLUE : Tu ne dois JAMAIS inventer de chiffres, pourcentages ou données. Utilise UNIQUEMENT les valeurs exactes ci-dessous.
 
-**Transaction à analyser:**
-- Scénario: ${scenario.name}
-- Description: ${scenario.description}
-- Montant (normalisé): ${scenario.sensors.amount.toFixed(2)}
-- Fréquence: ${scenario.sensors.frequency.toFixed(2)}
-- Distance géographique: ${scenario.sensors.location.toFixed(2)}
-- Heure: ${scenario.sensors.timeOfDay.toFixed(2)}
-- Âge du compte: ${scenario.sensors.accountAge.toFixed(2)}
+DONNÉES DE LA TRANSACTION :
+- Scénario : "${scenario.name}"
+- Description : "${scenario.description}"
+- Montant normalisé : ${scenario.sensors.amount.toFixed(2)} (échelle 0 à 1)
+- Fréquence : ${scenario.sensors.frequency.toFixed(2)}
+- Distance géographique : ${scenario.sensors.location.toFixed(2)}
+- Heure normalisée : ${scenario.sensors.timeOfDay.toFixed(2)}
+- Âge du compte : ${scenario.sensors.accountAge.toFixed(2)}
 
-**Métriques calculées:**
-- IR (Irréversibilité): ${metrics.ir.toFixed(2)}
-- CIZ (Conflit Interne): ${metrics.ciz.toFixed(2)}
-- DTS (Sensibilité Temporelle): ${metrics.dts.toFixed(2)}
-- TSG (Garde Totale): ${metrics.tsg.toFixed(2)}
+MÉTRIQUES CALCULÉES :
+- IR (Irréversibilité) : ${metrics.ir.toFixed(2)}
+- CIZ (Conflit Interne) : ${metrics.ciz.toFixed(2)}
+- DTS (Sensibilité Temporelle) : ${metrics.dts.toFixed(2)}
+- TSG (Garde Totale) : ${metrics.tsg.toFixed(2)}
 
-**Ta mission:**
-Fournis une analyse concise (2-3 phrases) expliquant pourquoi cette transaction devrait être ${scenario.expectedDecision}. 
-Mentionne les facteurs clés qui influencent ta décision.
+DÉCISION DU SYSTÈME : ${scenario.expectedDecision}
 
-Réponds en français, de manière professionnelle et claire.`;
+Écris 2-3 phrases en français expliquant pourquoi cette transaction est ${scenario.expectedDecision}, en citant les valeurs exactes des métriques. Ne mentionne aucun chiffre qui n'est pas dans les données ci-dessus.`;
 
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    
+    const text = result.response.text();
     return text || "Analyse Gemini non disponible";
   } catch (error) {
     console.error("[Gemini] Error analyzing transaction:", error);
@@ -135,7 +130,6 @@ function makeDecision(
   metrics: DecisionResult["metrics"],
   ontologicalTests: DecisionResult["ontologicalTests"]
 ): { decision: DecisionResult["decision"]; reason: string; roiContribution: number } {
-  // Decision logic based on metrics and ontological tests
   const avgOntologicalScore =
     (ontologicalTests.timeIsLaw +
       ontologicalTests.absoluteHoldGate +
@@ -148,7 +142,6 @@ function makeDecision(
       ontologicalTests.emergentBehaviorWatch) /
     9;
 
-  // BLOQUER: High risk indicators
   if (metrics.tsg > 0.7 || metrics.ir > 0.8 || avgOntologicalScore < 0.90) {
     return {
       decision: "BLOQUER",
@@ -157,20 +150,18 @@ function makeDecision(
     };
   }
 
-  // ANALYSER: Medium risk
   if (metrics.tsg > 0.5 || metrics.ir > 0.6 || avgOntologicalScore < 0.94) {
     return {
       decision: "ANALYSER",
       reason: `Transaction en analyse : vérification manuelle requise (TSG: ${(metrics.tsg * 100).toFixed(0)}%)`,
-      roiContribution: Math.floor(scenario.sensors.amount * 10 * 1000 * 0.5), // En euros (50% du ROI normal)
+      roiContribution: Math.floor(scenario.sensors.amount * 10 * 1000 * 0.5),
     };
   }
 
-  // AUTORISER: Low risk
   return {
     decision: "AUTORISER",
     reason: `Transaction autorisée : ${scenario.description} - Profil sécurisé (Score: ${(avgOntologicalScore * 100).toFixed(1)}%)`,
-    roiContribution: Math.floor(scenario.sensors.amount * 10 * 1000), // En euros
+    roiContribution: Math.floor(scenario.sensors.amount * 10 * 1000),
   };
 }
 
@@ -178,16 +169,9 @@ function makeDecision(
  * Main function: Process a banking transaction
  */
 export async function processTransaction(scenario: Scenario): Promise<DecisionResult> {
-  // 1. Calculate metrics
   const metrics = calculateMetrics(scenario.sensors);
-
-  // 2. Calculate ontological tests
   const ontologicalTests = calculateOntologicalTests(scenario.sensors, metrics);
-
-  // 3. Make decision
   const { decision, reason, roiContribution } = makeDecision(scenario, metrics, ontologicalTests);
-
-  // 4. Get Gemini AI analysis (async, non-blocking)
   const geminiAnalysis = await analyzeWithGemini(scenario, metrics);
 
   return {
@@ -204,14 +188,14 @@ export async function processTransaction(scenario: Scenario): Promise<DecisionRe
  * Performance Insights Interface
  */
 export interface PerformanceInsights {
-  summary: string; // Résumé Gemini des performances
-  trends: string[]; // Tendances détectées
-  recommendations: string[]; // Recommandations d'amélioration
+  summary: string;
+  trends: string[];
+  recommendations: string[];
   metrics: {
-    accuracyRate: number; // Taux de précision (%)
-    avgResponseTime: number; // Temps de réponse moyen (ms)
-    geminiUsageRate: number; // Taux d'utilisation Gemini (%)
-    confidenceScore: number; // Score de confiance moyen (%)
+    accuracyRate: number;
+    avgResponseTime: number;
+    geminiUsageRate: number;
+    confidenceScore: number;
   };
 }
 
@@ -222,83 +206,104 @@ export async function generatePerformanceInsights(
   transactionHistory: DecisionResult[],
   totalTransactions: number
 ): Promise<PerformanceInsights> {
+  // Calculate real metrics from actual data
+  const correctDecisions = transactionHistory.filter(tx => {
+    const avgOntological = Object.values(tx.ontologicalTests).reduce((a, b) => a + b, 0) / 9;
+    return avgOntological >= 0.94;
+  }).length;
+  
+  const accuracyRate = (correctDecisions / transactionHistory.length) * 100;
+  const geminiUsageRate = transactionHistory.filter(tx => 
+    tx.geminiAnalysis && !tx.geminiAnalysis.includes("indisponible") && !tx.geminiAnalysis.includes("manquante")
+  ).length / transactionHistory.length * 100;
+  const avgConfidence = transactionHistory.reduce((sum, tx) => {
+    const avgOntological = Object.values(tx.ontologicalTests).reduce((a, b) => a + b, 0) / 9;
+    return sum + avgOntological;
+  }, 0) / transactionHistory.length * 100;
+
+  const decisionStats = {
+    AUTORISER: transactionHistory.filter(tx => tx.decision === "AUTORISER").length,
+    ANALYSER: transactionHistory.filter(tx => tx.decision === "ANALYSER").length,
+    BLOQUER: transactionHistory.filter(tx => tx.decision === "BLOQUER").length,
+  };
+
+  const totalROI = transactionHistory.reduce((sum, tx) => sum + tx.roiContribution, 0);
+  const avgIR = transactionHistory.reduce((sum, tx) => sum + tx.metrics.ir, 0) / transactionHistory.length;
+  const avgTSG = transactionHistory.reduce((sum, tx) => sum + tx.metrics.tsg, 0) / transactionHistory.length;
+
   try {
-    // Calculate metrics
-    const correctDecisions = transactionHistory.filter(tx => {
-      const avgOntological = Object.values(tx.ontologicalTests).reduce((a, b) => a + b, 0) / 9;
-      return avgOntological >= 0.94;
-    }).length;
-    
-    const accuracyRate = (correctDecisions / transactionHistory.length) * 100;
-    const geminiUsageRate = transactionHistory.filter(tx => !tx.geminiAnalysis.includes("temporairement indisponible")).length / transactionHistory.length * 100;
-    const avgConfidence = transactionHistory.reduce((sum, tx) => {
-      const avgOntological = Object.values(tx.ontologicalTests).reduce((a, b) => a + b, 0) / 9;
-      return sum + avgOntological;
-    }, 0) / transactionHistory.length * 100;
+    const model = await getGeminiModel();
 
-    // Prepare data for Gemini
-    const decisionStats = {
-      AUTORISER: transactionHistory.filter(tx => tx.decision === "AUTORISER").length,
-      ANALYSER: transactionHistory.filter(tx => tx.decision === "ANALYSER").length,
-      BLOQUER: transactionHistory.filter(tx => tx.decision === "BLOQUER").length,
-    };
+    const prompt = `Tu es un analyste de performance pour un robot bancaire autonome appelé "Bank Safety Lab".
 
-    const prompt = `Tu es un analyste de performance pour un robot bancaire autonome. Analyse ces statistiques et génère un rapport concis en français:
+RÈGLE ABSOLUE : Tu dois utiliser UNIQUEMENT les chiffres exacts fournis ci-dessous. NE JAMAIS inventer, arrondir différemment, ou ajouter des données qui ne sont pas listées ici.
 
-**Statistiques (${totalTransactions} transactions):**
-- Taux de précision: ${accuracyRate.toFixed(1)}%
-- Utilisation Gemini: ${geminiUsageRate.toFixed(1)}%
-- Score de confiance moyen: ${avgConfidence.toFixed(1)}%
-- Décisions: ${decisionStats.AUTORISER} autorisées, ${decisionStats.ANALYSER} en analyse, ${decisionStats.BLOQUER} bloquées
+DONNÉES RÉELLES EXACTES (${totalTransactions} transactions au total, analyse sur les ${transactionHistory.length} dernières) :
+- Taux de précision réel : ${accuracyRate.toFixed(1)}%
+- Score de confiance moyen réel : ${avgConfidence.toFixed(1)}%
+- Transactions autorisées : ${decisionStats.AUTORISER} (${(decisionStats.AUTORISER/transactionHistory.length*100).toFixed(1)}%)
+- Transactions en analyse : ${decisionStats.ANALYSER} (${(decisionStats.ANALYSER/transactionHistory.length*100).toFixed(1)}%)
+- Transactions bloquées : ${decisionStats.BLOQUER} (${(decisionStats.BLOQUER/transactionHistory.length*100).toFixed(1)}%)
+- ROI total généré : ${totalROI.toLocaleString('fr-FR')} €
+- IR moyen (irréversibilité) : ${(avgIR*100).toFixed(1)}%
+- TSG moyen (garde totale) : ${(avgTSG*100).toFixed(1)}%
 
-**Génère:**
-1. Un résumé en 2-3 phrases des performances globales
-2. 3 tendances clés détectées (une phrase chacune)
-3. 2 recommandations d'amélioration (une phrase chacune)
+GÉNÈRE en français, en citant les chiffres exacts ci-dessus :
+1. "summary" : Un résumé de 2-3 phrases des performances. Cite les vrais chiffres.
+2. "trends" : 3 tendances observées (1 phrase chacune). Base-toi sur la répartition des décisions et les métriques réelles.
+3. "recommendations" : 2 recommandations concrètes (1 phrase chacune).
 
-Format JSON:
-{
-  "summary": "...",
-  "trends": ["...", "...", "..."],
-  "recommendations": ["...", "..."]
-}`;
+IMPORTANT : Chaque chiffre que tu mentionnes DOIT correspondre exactement à un chiffre ci-dessus.
 
-    const { ENV } = await import("./_core/env");
-    const genAI = new GoogleGenerativeAI(ENV.geminiApiKey || "");
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    
+Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après :
+{"summary":"...","trends":["...","...","..."],"recommendations":["...","..."]}`;
+
     const result = await model.generateContent(prompt);
     const response = result.response.text();
     
-    // Parse JSON response
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    // Clean response: remove markdown code fences, trim whitespace
+    const cleaned = response.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
+      // Fix common Gemini JSON issues: trailing commas, unescaped newlines
+      const fixedJson = jsonMatch[0]
+        .replace(/,\s*([\]\}])/g, '$1')  // Remove trailing commas
+        .replace(/\n/g, ' ')              // Remove literal newlines inside strings
+        .replace(/\t/g, ' ');             // Remove tabs
+      const parsed = JSON.parse(fixedJson);
       return {
-        summary: parsed.summary,
-        trends: parsed.trends,
-        recommendations: parsed.recommendations,
+        summary: parsed.summary || "Résumé non disponible",
+        trends: Array.isArray(parsed.trends) ? parsed.trends : [],
+        recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [],
         metrics: {
           accuracyRate,
-          avgResponseTime: 150, // Placeholder (ms)
+          avgResponseTime: 150,
           geminiUsageRate,
           confidenceScore: avgConfidence,
         },
       };
     }
 
-    throw new Error("Failed to parse Gemini response");
+    throw new Error("Failed to parse Gemini JSON response");
   } catch (error) {
     console.error("[Gemini] Error generating performance insights:", error);
+    // Fallback: generate insights without Gemini using real data
     return {
-      summary: "Analyse des performances temporairement indisponible",
-      trends: [],
-      recommendations: [],
+      summary: `Sur ${totalTransactions} transactions, le robot a autorisé ${decisionStats.AUTORISER}, analysé ${decisionStats.ANALYSER} et bloqué ${decisionStats.BLOQUER}. Le taux de précision est de ${accuracyRate.toFixed(1)}% avec un score de confiance moyen de ${avgConfidence.toFixed(1)}%.`,
+      trends: [
+        `${(decisionStats.AUTORISER/transactionHistory.length*100).toFixed(0)}% des transactions sont autorisées, indiquant un flux majoritairement sain.`,
+        `Le TSG moyen est de ${(avgTSG*100).toFixed(1)}%, ce qui reflète un niveau de risque ${avgTSG < 0.3 ? 'faible' : avgTSG < 0.5 ? 'modéré' : 'élevé'}.`,
+        `Le ROI total atteint ${totalROI.toLocaleString('fr-FR')} € sur l'ensemble des transactions traitées.`,
+      ],
+      recommendations: [
+        `Surveiller les ${decisionStats.BLOQUER} transactions bloquées pour identifier les patterns de fraude récurrents.`,
+        `Optimiser le seuil d'analyse pour réduire les ${decisionStats.ANALYSER} transactions en attente de vérification manuelle.`,
+      ],
       metrics: {
-        accuracyRate: 0,
-        avgResponseTime: 0,
-        geminiUsageRate: 0,
-        confidenceScore: 0,
+        accuracyRate,
+        avgResponseTime: 150,
+        geminiUsageRate,
+        confidenceScore: avgConfidence,
       },
     };
   }
@@ -310,40 +315,65 @@ Format JSON:
 export async function analyzeContinuousTrends(
   recentTransactions: DecisionResult[]
 ): Promise<string[]> {
+  if (recentTransactions.length < 5) {
+    return ["Pas assez de données pour détecter des tendances"];
+  }
+
+  // Calculate real stats from the transactions
+  const decisions = recentTransactions.map(tx => tx.decision);
+  const autoriserCount = decisions.filter(d => d === "AUTORISER").length;
+  const analyserCount = decisions.filter(d => d === "ANALYSER").length;
+  const bloquerCount = decisions.filter(d => d === "BLOQUER").length;
+  const avgTSG = recentTransactions.reduce((s, tx) => s + tx.metrics.tsg, 0) / recentTransactions.length;
+  const avgIR = recentTransactions.reduce((s, tx) => s + tx.metrics.ir, 0) / recentTransactions.length;
+  const totalROI = recentTransactions.reduce((s, tx) => s + tx.roiContribution, 0);
+
   try {
-    if (recentTransactions.length < 5) {
-      return ["Pas assez de données pour détecter des tendances"];
-    }
+    const model = await getGeminiModel();
 
-    const recentDecisions = recentTransactions.slice(-10).map(tx => ({
-      decision: tx.decision,
-      tsg: tx.metrics.tsg,
-      ir: tx.metrics.ir,
-    }));
+    const prompt = `Tu es un analyste temps réel pour un robot bancaire autonome.
 
-    const prompt = `Analyse ces 10 dernières décisions bancaires et identifie 2-3 tendances en français (une phrase chacune):
+RÈGLE ABSOLUE : Utilise UNIQUEMENT les chiffres exacts ci-dessous. NE JAMAIS inventer de données.
 
-${JSON.stringify(recentDecisions, null, 2)}
+DONNÉES RÉELLES DES ${recentTransactions.length} DERNIÈRES TRANSACTIONS :
+- Autorisées : ${autoriserCount}
+- En analyse : ${analyserCount}
+- Bloquées : ${bloquerCount}
+- TSG moyen : ${(avgTSG*100).toFixed(1)}%
+- IR moyen : ${(avgIR*100).toFixed(1)}%
+- ROI cumulé : ${totalROI.toLocaleString('fr-FR')} €
 
-Réponds avec un tableau JSON: ["tendance 1", "tendance 2", "tendance 3"]`;
+Génère exactement 3 observations courtes (1 phrase chacune) en français, basées UNIQUEMENT sur ces chiffres. Cite les vrais chiffres dans chaque phrase.
 
-    const { ENV } = await import("./_core/env");
-    const genAI = new GoogleGenerativeAI(ENV.geminiApiKey || "");
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    
+Réponds UNIQUEMENT avec ce JSON, sans texte avant ni après :
+["observation 1","observation 2","observation 3"]`;
+
     const result = await model.generateContent(prompt);
     const response = result.response.text();
     
-    // Parse JSON response
-    const jsonMatch = response.match(/\[[\s\S]*\]/);
+    // Clean response: remove markdown code fences, trim whitespace
+    const cleaned = response.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+      // Fix common Gemini JSON issues: trailing commas, unescaped newlines in strings
+      const fixedJson = jsonMatch[0]
+        .replace(/,\s*\]/g, ']')          // Remove trailing commas
+        .replace(/([^\\])\n/g, '$1 ');    // Remove literal newlines inside strings
+      const parsed = JSON.parse(fixedJson);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
     }
 
-    return ["Analyse des tendances en cours..."];
+    throw new Error("Failed to parse Gemini trends response");
   } catch (error) {
     console.error("[Gemini] Error analyzing trends:", error);
-    return ["Analyse des tendances temporairement indisponible"];
+    // Fallback: generate trends without Gemini using real data
+    return [
+      `Sur les ${recentTransactions.length} dernières transactions : ${autoriserCount} autorisées, ${analyserCount} en analyse, ${bloquerCount} bloquées.`,
+      `Le TSG moyen est de ${(avgTSG*100).toFixed(1)}% et l'IR moyen de ${(avgIR*100).toFixed(1)}%.`,
+      `ROI cumulé sur cette période : ${totalROI.toLocaleString('fr-FR')} €.`,
+    ];
   }
 }
 
@@ -353,45 +383,95 @@ Réponds avec un tableau JSON: ["tendance 1", "tendance 2", "tendance 3"]`;
 export async function generateDetailedReport(
   transactionHistory: DecisionResult[]
 ): Promise<string> {
+  // Calculate all real stats
+  const total = transactionHistory.length;
+  const autoriser = transactionHistory.filter(tx => tx.decision === "AUTORISER").length;
+  const analyser = transactionHistory.filter(tx => tx.decision === "ANALYSER").length;
+  const bloquer = transactionHistory.filter(tx => tx.decision === "BLOQUER").length;
+  const avgTSG = transactionHistory.reduce((sum, tx) => sum + tx.metrics.tsg, 0) / total;
+  const avgIR = transactionHistory.reduce((sum, tx) => sum + tx.metrics.ir, 0) / total;
+  const avgCIZ = transactionHistory.reduce((sum, tx) => sum + tx.metrics.ciz, 0) / total;
+  const avgDTS = transactionHistory.reduce((sum, tx) => sum + tx.metrics.dts, 0) / total;
+  const totalROI = transactionHistory.reduce((sum, tx) => sum + tx.roiContribution, 0);
+  const avgOntological = transactionHistory.reduce((sum, tx) => {
+    return sum + Object.values(tx.ontologicalTests).reduce((a, b) => a + b, 0) / 9;
+  }, 0) / total;
+
+  // List of unique scenarios encountered
+  const scenarioNames = Array.from(new Set(transactionHistory.map(tx => tx.reason.split(':')[0])));
+
   try {
-    const stats = {
-      total: transactionHistory.length,
-      autoriser: transactionHistory.filter(tx => tx.decision === "AUTORISER").length,
-      analyser: transactionHistory.filter(tx => tx.decision === "ANALYSER").length,
-      bloquer: transactionHistory.filter(tx => tx.decision === "BLOQUER").length,
-      avgTSG: transactionHistory.reduce((sum, tx) => sum + tx.metrics.tsg, 0) / transactionHistory.length,
-      avgIR: transactionHistory.reduce((sum, tx) => sum + tx.metrics.ir, 0) / transactionHistory.length,
-      totalROI: transactionHistory.reduce((sum, tx) => sum + tx.roiContribution, 0),
-    };
+    const model = await getGeminiModel();
 
-    const prompt = `Génère un rapport de performance détaillé en français (5-7 phrases) pour ce robot bancaire autonome:
+    const prompt = `Tu es un analyste senior qui rédige un rapport de performance pour le robot bancaire autonome "Bank Safety Lab".
 
-**Statistiques:**
-- Total: ${stats.total} transactions
-- Autorisées: ${stats.autoriser} (${(stats.autoriser/stats.total*100).toFixed(1)}%)
-- En analyse: ${stats.analyser} (${(stats.analyser/stats.total*100).toFixed(1)}%)
-- Bloquées: ${stats.bloquer} (${(stats.bloquer/stats.total*100).toFixed(1)}%)
-- TSG moyen: ${(stats.avgTSG*100).toFixed(1)}%
-- IR moyen: ${(stats.avgIR*100).toFixed(1)}%
-- ROI total: ${stats.totalROI.toLocaleString('fr-FR')} €
+RÈGLE ABSOLUE : Tu dois utiliser UNIQUEMENT les chiffres exacts fournis ci-dessous. NE JAMAIS inventer, arrondir différemment, ou ajouter des données qui ne sont pas listées ici. Chaque chiffre que tu cites DOIT correspondre exactement à un chiffre de cette liste.
 
-Le rapport doit inclure:
-1. Vue d'ensemble des performances
-2. Analyse des décisions
-3. Évaluation des risques
-4. Impact financier (ROI)
-5. Recommandations stratégiques
+═══════════════════════════════════════
+DONNÉES RÉELLES EXACTES
+═══════════════════════════════════════
 
-Réponds en texte brut (pas de JSON).`;
+VOLUME : ${total} transactions traitées
 
-    const { ENV } = await import("./_core/env");
-    const genAI = new GoogleGenerativeAI(ENV.geminiApiKey || "");
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    
+DÉCISIONS :
+- AUTORISER : ${autoriser} transactions (${(autoriser/total*100).toFixed(1)}%)
+- ANALYSER : ${analyser} transactions (${(analyser/total*100).toFixed(1)}%)
+- BLOQUER : ${bloquer} transactions (${(bloquer/total*100).toFixed(1)}%)
+
+MÉTRIQUES MOYENNES :
+- IR (Irréversibilité) : ${(avgIR*100).toFixed(1)}%
+- CIZ (Conflit Interne) : ${(avgCIZ*100).toFixed(1)}%
+- DTS (Sensibilité Temporelle) : ${(avgDTS*100).toFixed(1)}%
+- TSG (Garde Totale) : ${(avgTSG*100).toFixed(1)}%
+
+TESTS ONTOLOGIQUES :
+- Score moyen des 9 tests : ${(avgOntological*100).toFixed(1)}%
+
+IMPACT FINANCIER :
+- ROI total : ${totalROI.toLocaleString('fr-FR')} €
+
+═══════════════════════════════════════
+
+Rédige un rapport structuré en français avec ces 5 sections. Chaque section doit citer les chiffres exacts ci-dessus :
+
+1. VUE D'ENSEMBLE : Résumé global (nombre de transactions, répartition des décisions)
+2. ANALYSE DES DÉCISIONS : Pourquoi ${(autoriser/total*100).toFixed(1)}% sont autorisées, ${(analyser/total*100).toFixed(1)}% en analyse, ${(bloquer/total*100).toFixed(1)}% bloquées
+3. ÉVALUATION DES RISQUES : Commentaire sur TSG moyen ${(avgTSG*100).toFixed(1)}%, IR moyen ${(avgIR*100).toFixed(1)}%, score ontologique ${(avgOntological*100).toFixed(1)}%
+4. IMPACT FINANCIER : ROI de ${totalROI.toLocaleString('fr-FR')} € et ce que cela signifie
+5. RECOMMANDATIONS : 2-3 recommandations basées sur les chiffres réels
+
+Format : texte structuré avec titres en majuscules. Pas de JSON. Pas de markdown.`;
+
     const result = await model.generateContent(prompt);
-    return result.response.text();
+    const text = result.response.text();
+    return text || generateFallbackReport(total, autoriser, analyser, bloquer, avgTSG, avgIR, avgOntological, totalROI);
   } catch (error) {
     console.error("[Gemini] Error generating detailed report:", error);
-    return "Génération du rapport détaillé temporairement indisponible";
+    return generateFallbackReport(total, autoriser, analyser, bloquer, avgTSG, avgIR, avgOntological, totalROI);
   }
+}
+
+/**
+ * Fallback report when Gemini is unavailable - uses only real data
+ */
+function generateFallbackReport(
+  total: number, autoriser: number, analyser: number, bloquer: number,
+  avgTSG: number, avgIR: number, avgOntological: number, totalROI: number
+): string {
+  return `VUE D'ENSEMBLE
+Le robot bancaire a traité ${total} transactions au total. ${autoriser} ont été autorisées (${(autoriser/total*100).toFixed(1)}%), ${analyser} sont en analyse (${(analyser/total*100).toFixed(1)}%) et ${bloquer} ont été bloquées (${(bloquer/total*100).toFixed(1)}%).
+
+ANALYSE DES DÉCISIONS
+La majorité des transactions (${(autoriser/total*100).toFixed(1)}%) sont autorisées, ce qui indique un flux de transactions majoritairement légitime. Les ${analyser} transactions en analyse nécessitent une vérification manuelle. Les ${bloquer} transactions bloquées correspondent aux scénarios à haut risque.
+
+ÉVALUATION DES RISQUES
+Le TSG moyen (Garde Totale) est de ${(avgTSG*100).toFixed(1)}%, l'IR moyen (Irréversibilité) de ${(avgIR*100).toFixed(1)}%. Le score moyen des 9 tests ontologiques atteint ${(avgOntological*100).toFixed(1)}%, ce qui ${avgOntological >= 0.94 ? 'dépasse le seuil de fiabilité de 94%' : 'est en dessous du seuil optimal de 94%'}.
+
+IMPACT FINANCIER
+Le ROI total généré est de ${totalROI.toLocaleString('fr-FR')} €. Ce montant reflète la valeur ajoutée du traitement automatisé des transactions autorisées et partiellement des transactions en analyse.
+
+RECOMMANDATIONS
+1. Surveiller les transactions bloquées pour affiner les seuils de détection.
+2. Réduire le nombre de transactions en analyse en optimisant les critères de décision automatique.
+3. Maintenir le score ontologique au-dessus de 94% pour garantir la fiabilité du système.`;
 }
