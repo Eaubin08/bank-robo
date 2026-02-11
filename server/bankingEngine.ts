@@ -90,7 +90,7 @@ async function analyzeWithGemini(scenario: Scenario, metrics: DecisionResult["me
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `Tu es un système d'IA bancaire autonome qui analyse les transactions.
 
