@@ -1,6 +1,6 @@
 """
 Bank Safety Lab - Autonomous Banking Decision Robot
-Streamlit Version - Reproduction EXACTE du site Manus
+Streamlit Version - Utilisation des composants natifs pour garantir l'affichage
 """
 
 import streamlit as st
@@ -9,7 +9,6 @@ import random
 import time
 from datetime import datetime
 import plotly.graph_objects as go
-import plotly.express as px
 
 # Configuration de la page
 st.set_page_config(
@@ -19,182 +18,64 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS personnalisé pour reproduire EXACTEMENT le design Manus
+# CSS simplifié
 st.markdown("""
 <style>
-    /* Reset Streamlit defaults */
     .main {
         background: linear-gradient(135deg, #4C1D95 0%, #5B21B6 100%);
-        padding: 1.5rem;
     }
-    
-    /* Hide Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stDeployButton {visibility: hidden;}
-    
-    /* Custom styling */
     .stApp {
         background: linear-gradient(135deg, #4C1D95 0%, #5B21B6 100%);
     }
-    
     h1, h2, h3, p, div, span, label {
         color: white !important;
-    }
-    
-    /* Header */
-    .main-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: #FCD34D !important;
-        margin-bottom: 0.25rem;
-    }
-    
-    .sub-title {
-        font-size: 1rem;
-        color: #9CA3AF !important;
-        margin-bottom: 1rem;
-    }
-    
-    .roi-display {
-        font-size: 3rem;
-        font-weight: 800;
-        color: #FCD34D !important;
-        text-align: right;
-    }
-    
-    .roi-subtitle {
-        font-size: 0.875rem;
-        color: #9CA3AF !important;
-        text-align: right;
-    }
-    
-    /* Cards */
-    .metric-card {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 0.5rem;
-        padding: 1rem;
-        text-align: center;
-    }
-    
-    .metric-title {
-        font-size: 0.875rem;
-        color: #9CA3AF !important;
-        margin-bottom: 0.5rem;
-    }
-    
-    .metric-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: white !important;
-    }
-    
-    .stat-card-green {
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        text-align: center;
-    }
-    
-    .stat-card-orange {
-        background: rgba(245, 158, 11, 0.1);
-        border: 1px solid rgba(245, 158, 11, 0.3);
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        text-align: center;
-    }
-    
-    .stat-card-red {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        text-align: center;
-    }
-    
-    /* Decision badge */
-    .decision-badge-green {
-        background: #10B981;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 600;
-        display: inline-block;
-    }
-    
-    .decision-badge-orange {
-        background: #F59E0B;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 600;
-        display: inline-block;
-    }
-    
-    .decision-badge-red {
-        background: #EF4444;
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 600;
-        display: inline-block;
-    }
-    
-    /* Progress bars */
-    .stProgress > div > div > div {
-        background-color: #3B82F6;
     }
 </style>
 """, unsafe_allow_html=True)
 
+# Initialisation session state
+if "transactions" not in st.session_state:
+    st.session_state.transactions = []
+if "total_roi" not in st.session_state:
+    st.session_state.total_roi = 0
+if "is_running" not in st.session_state:
+    st.session_state.is_running = False
+if "current_decision" not in st.session_state:
+    st.session_state.current_decision = None
+if "decision_counts" not in st.session_state:
+    st.session_state.decision_counts = {"AUTORISER": 0, "ANALYSER": 0, "BLOQUER": 0}
+
 # Scénarios bancaires
 SCENARIOS = [
-    {"name": "Client-Premium", "risk": 0.1},
-    {"name": "Achat-Regulier", "risk": 0.15},
-    {"name": "Virement-Famille", "risk": 0.12},
-    {"name": "Retrait-ATM-Habituel", "risk": 0.13},
-    {"name": "Paiement-Restaurant", "risk": 0.11},
-    {"name": "Achat-Pharmacie", "risk": 0.10},
-    {"name": "Virement-Loyer", "risk": 0.14},
-    {"name": "Achat-Supermarche", "risk": 0.12},
-    {"name": "Paiement-Essence", "risk": 0.13},
-    {"name": "Virement-Epargne", "risk": 0.09},
-    {"name": "Achat-Librairie", "risk": 0.11},
-    {"name": "Paiement-Cinema", "risk": 0.12},
-    {"name": "Retrait-ATM-Etranger", "risk": 0.55},
-    {"name": "Virement-Salaire", "risk": 0.48},
-    {"name": "Achat-Montant-Eleve", "risk": 0.62},
-    {"name": "Transaction-Crypto", "risk": 0.85},
+    {"name": "Achat-Supermarche", "ir": 0.1, "ciz": 0.15, "dts": 0.2, "tsg": 0.15},
+    {"name": "Paiement-Restaurant", "ir": 0.12, "ciz": 0.18, "dts": 0.22, "tsg": 0.17},
+    {"name": "Retrait-ATM-Habituel", "ir": 0.15, "ciz": 0.2, "dts": 0.25, "tsg": 0.2},
+    {"name": "Virement-Famille", "ir": 0.2, "ciz": 0.25, "dts": 0.3, "tsg": 0.25},
+    {"name": "Achat-Pharmacie", "ir": 0.1, "ciz": 0.15, "dts": 0.17, "tsg": 0.14},
+    {"name": "Paiement-Essence", "ir": 0.13, "ciz": 0.17, "dts": 0.21, "tsg": 0.17},
+    {"name": "Achat-Librairie", "ir": 0.11, "ciz": 0.16, "dts": 0.19, "tsg": 0.15},
+    {"name": "Paiement-Cinema", "ir": 0.14, "ciz": 0.19, "dts": 0.23, "tsg": 0.19},
+    {"name": "Achat-Regulier", "ir": 0.12, "ciz": 0.17, "dts": 0.21, "tsg": 0.17},
+    {"name": "Client-Premium", "ir": 0.08, "ciz": 0.12, "dts": 0.15, "tsg": 0.12},
+    {"name": "Retrait-ATM-Étranger", "ir": 0.45, "ciz": 0.5, "dts": 0.55, "tsg": 0.5},
+    {"name": "Transaction-Crypto", "ir": 0.5, "ciz": 0.55, "dts": 0.6, "tsg": 0.55},
+    {"name": "Achat-Montant-Eleve", "ir": 0.4, "ciz": 0.45, "dts": 0.5, "tsg": 0.45},
+    {"name": "Virement-International", "ir": 0.8, "ciz": 0.85, "dts": 0.9, "tsg": 0.85},
 ]
 
-# Initialisation de la session
-if 'transactions' not in st.session_state:
-    st.session_state.transactions = []
-if 'total_roi' not in st.session_state:
-    st.session_state.total_roi = 0
-if 'decision_counts' not in st.session_state:
-    st.session_state.decision_counts = {"AUTORISER": 0, "ANALYSER": 0, "BLOQUER": 0}
-if 'is_running' not in st.session_state:
-    st.session_state.is_running = False
-if 'current_decision' not in st.session_state:
-    st.session_state.current_decision = None
-
 def calculate_metrics(scenario):
-    """Calcule les métriques de sécurité"""
-    risk = scenario["risk"]
+    """Calcule les métriques avec variation aléatoire"""
     return {
-        "ir": round(risk + random.uniform(-0.1, 0.1), 2),
-        "ciz": round(risk * 0.5 + random.uniform(-0.05, 0.05), 2),
-        "dts": round(risk * 0.7 + random.uniform(-0.08, 0.08), 2),
-        "tsg": round(risk * 0.6 + random.uniform(-0.06, 0.06), 2),
+        "ir": min(1.0, max(0.0, scenario["ir"] + random.uniform(-0.05, 0.05))),
+        "ciz": min(1.0, max(0.0, scenario["ciz"] + random.uniform(-0.05, 0.05))),
+        "dts": min(1.0, max(0.0, scenario["dts"] + random.uniform(-0.05, 0.05))),
+        "tsg": min(1.0, max(0.0, scenario["tsg"] + random.uniform(-0.05, 0.05))),
     }
 
 def make_decision(metrics, scenario_name):
     """Prend une décision basée sur les métriques"""
     tsg = metrics["tsg"]
+    
     if tsg < 0.3:
         decision = "AUTORISER"
         reason = f"Transaction autorisée : {scenario_name} - Profil sécurisé (Score: {(1-tsg)*100:.1f}%)"
@@ -236,19 +117,20 @@ def process_transaction():
     
     return transaction
 
+# ========== INTERFACE ==========
+
 # Header
 col1, col2 = st.columns([3, 1])
 with col1:
-    st.markdown('<div class="main-title">Bank Safety Lab ULTRA</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Autonomous Banking Decision Robot | Track 3: Robotic Interaction</div>', unsafe_allow_html=True)
+    st.title("🏦 Bank Safety Lab ULTRA")
+    st.caption("Autonomous Banking Decision Robot | Track 3: Robotic Interaction")
 with col2:
-    st.markdown(f'<div class="roi-display">ROI: {st.session_state.total_roi}M €</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="roi-subtitle">{len(st.session_state.transactions)} transactions processed</div>', unsafe_allow_html=True)
+    st.metric("ROI", f"{st.session_state.total_roi}M €", f"{len(st.session_state.transactions)} transactions")
 
-st.markdown("---")
+st.divider()
 
 # Tests Ontologiques
-st.markdown("### 9 Tests Ontologiques | Précision: 96% ✅")
+st.subheader("9 Tests Ontologiques | Précision: 96% ✅")
 cols = st.columns(3)
 tests = [
     "Time Is Law", "Absolute Hold Gate", "Zero Tolerance Flag",
@@ -259,10 +141,10 @@ for idx, test in enumerate(tests):
     with cols[idx % 3]:
         st.progress(0.96, text=f"{test}: 96.0%")
 
-st.markdown("---")
+st.divider()
 
 # Contrôles de Simulation
-st.markdown("### Contrôles de Simulation")
+st.subheader("Contrôles de Simulation")
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -338,21 +220,20 @@ if st.session_state.is_running:
     time.sleep(1)
     st.rerun()
 
-st.markdown("---")
+st.divider()
 
 # Décision Actuelle
 if st.session_state.current_decision:
-    st.markdown("### 🎯 Décision Actuelle")
+    st.subheader("🎯 Décision Actuelle")
     dec = st.session_state.current_decision
     
     if dec["decision"] == "AUTORISER":
-        badge_class = "decision-badge-green"
+        st.success(f"✅ **{dec['decision']}**")
     elif dec["decision"] == "ANALYSER":
-        badge_class = "decision-badge-orange"
+        st.warning(f"⚠️ **{dec['decision']}**")
     else:
-        badge_class = "decision-badge-red"
+        st.error(f"🚫 **{dec['decision']}**")
     
-    st.markdown(f'<div class="{badge_class}">{dec["decision"]}</div>', unsafe_allow_html=True)
     st.caption(f"**Scénario:** {dec['scenario']}")
     st.info(f"**Raison:** {dec['reason']}")
     
@@ -373,27 +254,27 @@ if st.session_state.current_decision:
         Le système garantit une transparence totale du processus décisionnel.
         """)
 
-st.markdown("---")
+    st.divider()
 
-# Métriques en cartes
-st.markdown("### 📊 Métriques en Temps Réel")
+# Métriques en cartes (COMPOSANTS NATIFS STREAMLIT)
 if st.session_state.current_decision:
+    st.subheader("📊 Métriques en Temps Réel")
     col1, col2, col3, col4 = st.columns(4)
     metrics = st.session_state.current_decision["metrics"]
     
     with col1:
-        st.markdown(f'<div class="metric-card"><div class="metric-title">IR (Irréversibilité)</div><div class="metric-value">{metrics["ir"]:.2f}</div></div>', unsafe_allow_html=True)
+        st.metric("IR (Irréversibilité)", f"{metrics['ir']:.2f}")
     with col2:
-        st.markdown(f'<div class="metric-card"><div class="metric-title">CIZ (Conflit Interne)</div><div class="metric-value">{metrics["ciz"]:.2f}</div></div>', unsafe_allow_html=True)
+        st.metric("CIZ (Conflit Interne)", f"{metrics['ciz']:.2f}")
     with col3:
-        st.markdown(f'<div class="metric-card"><div class="metric-title">DTS (Pression Temporelle)</div><div class="metric-value">{metrics["dts"]:.2f}</div></div>', unsafe_allow_html=True)
+        st.metric("DTS (Pression Temporelle)", f"{metrics['dts']:.2f}")
     with col4:
-        st.markdown(f'<div class="metric-card"><div class="metric-title">TSG (Tension Globale)</div><div class="metric-value">{metrics["tsg"]:.2f}</div></div>', unsafe_allow_html=True)
+        st.metric("TSG (Tension Globale)", f"{metrics['tsg']:.2f}")
+    
+    st.divider()
 
-st.markdown("---")
-
-# Statistiques Décisionnelles
-st.markdown("### 📊 Statistiques Décisionnelles")
+# Statistiques Décisionnelles (COMPOSANTS NATIFS STREAMLIT)
+st.subheader("📊 Statistiques Décisionnelles")
 col1, col2, col3 = st.columns(3)
 
 total = len(st.session_state.transactions)
@@ -401,105 +282,112 @@ total = len(st.session_state.transactions)
 with col1:
     count = st.session_state.decision_counts["AUTORISER"]
     pct = (count / total * 100) if total > 0 else 0
-    st.markdown(f'<div class="stat-card-green"><h3>AUTORISER</h3><h1>{count}</h1><p>{pct:.0f}%</p></div>', unsafe_allow_html=True)
+    st.metric("✅ AUTORISER", count, f"{pct:.0f}%")
 
 with col2:
     count = st.session_state.decision_counts["ANALYSER"]
     pct = (count / total * 100) if total > 0 else 0
-    st.markdown(f'<div class="stat-card-orange"><h3>ANALYSER</h3><h1>{count}</h1><p>{pct:.0f}%</p></div>', unsafe_allow_html=True)
+    st.metric("⚠️ ANALYSER", count, f"{pct:.0f}%")
 
 with col3:
     count = st.session_state.decision_counts["BLOQUER"]
     pct = (count / total * 100) if total > 0 else 0
-    st.markdown(f'<div class="stat-card-red"><h3>BLOQUER</h3><h1>{count}</h1><p>{pct:.0f}%</p></div>', unsafe_allow_html=True)
+    st.metric("🚫 BLOQUER", count, f"{pct:.0f}%")
 
-st.markdown("---")
+st.divider()
 
 # Journal des événements
-st.markdown(f"### 📝 Journal des Événements")
+st.subheader(f"📝 Journal des Événements")
 st.caption(f"Dernières {min(len(st.session_state.transactions), 10)} transactions")
 
 if len(st.session_state.transactions) == 0:
     st.info("Aucune transaction pour le moment. Lancez la simulation !")
 else:
     for i, tx in enumerate(st.session_state.transactions[-10:][::-1]):
-        if tx["decision"] == "AUTORISER":
-            badge_class = "decision-badge-green"
-        elif tx["decision"] == "ANALYSER":
-            badge_class = "decision-badge-orange"
-        else:
-            badge_class = "decision-badge-red"
-        
         with st.expander(f"#{len(st.session_state.transactions)-i} - {tx['scenario']}", expanded=False):
-            st.markdown(f'<div class="{badge_class}">{tx["decision"]}</div>', unsafe_allow_html=True)
+            if tx["decision"] == "AUTORISER":
+                st.success(f"✅ **{tx['decision']}**")
+            elif tx["decision"] == "ANALYSER":
+                st.warning(f"⚠️ **{tx['decision']}**")
+            else:
+                st.error(f"🚫 **{tx['decision']}**")
+            
             st.write(f"**Métriques:** IR: {tx['metrics']['ir']:.2f}, CIZ: {tx['metrics']['ciz']:.2f}, DTS: {tx['metrics']['dts']:.2f}, TSG: {tx['metrics']['tsg']:.2f}")
             st.write(f"**ROI:** +{tx['roi']}M €")
             st.caption(f"**Raison:** {tx['reason']}")
 
-st.markdown("---")
+st.divider()
 
 # Graphiques
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("### Distribution des Décisions")
+    st.subheader("Distribution des Décisions")
     if len(st.session_state.transactions) > 0:
         fig = go.Figure(data=[go.Pie(
             labels=list(st.session_state.decision_counts.keys()),
             values=list(st.session_state.decision_counts.values()),
             marker=dict(colors=['#10B981', '#F59E0B', '#EF4444']),
-            hole=0.4,
-            textfont=dict(color='white', size=14)
+            hole=0.4
         )])
         fig.update_layout(
-            height=400,
-            showlegend=True,
-            paper_bgcolor='rgba(76,29,149,0.3)',
+            paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='white', size=12),
-            margin=dict(l=20, r=20, t=20, b=20)
+            font=dict(color='white', size=14),
+            height=400
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("Lancez la simulation pour voir le graphique")
+        st.info("Aucune donnée disponible")
 
 with col2:
-    st.markdown("### Évolution des Métriques")
-    if len(st.session_state.transactions) > 1:
-        df = pd.DataFrame([
-            {
-                "Transaction": i+1,
-                "IR": tx["metrics"]["ir"],
-                "CIZ": tx["metrics"]["ciz"],
-                "DTS": tx["metrics"]["dts"],
-                "TSG": tx["metrics"]["tsg"]
-            }
-            for i, tx in enumerate(st.session_state.transactions[-50:])
-        ])
+    st.subheader("Évolution des Métriques")
+    if len(st.session_state.transactions) >= 2:
+        recent_tx = st.session_state.transactions[-50:]
         
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df["Transaction"], y=df["IR"], name="IR", line=dict(color='#EF4444', width=2)))
-        fig.add_trace(go.Scatter(x=df["Transaction"], y=df["CIZ"], name="CIZ", line=dict(color='#F59E0B', width=2)))
-        fig.add_trace(go.Scatter(x=df["Transaction"], y=df["DTS"], name="DTS", line=dict(color='#3B82F6', width=2)))
-        fig.add_trace(go.Scatter(x=df["Transaction"], y=df["TSG"], name="TSG", line=dict(color='#10B981', width=2)))
+        fig.add_trace(go.Scatter(
+            y=[tx['metrics']['ir'] for tx in recent_tx],
+            mode='lines',
+            name='IR',
+            line=dict(color='#EF4444', width=2)
+        ))
+        fig.add_trace(go.Scatter(
+            y=[tx['metrics']['ciz'] for tx in recent_tx],
+            mode='lines',
+            name='CIZ',
+            line=dict(color='#F59E0B', width=2)
+        ))
+        fig.add_trace(go.Scatter(
+            y=[tx['metrics']['dts'] for tx in recent_tx],
+            mode='lines',
+            name='DTS',
+            line=dict(color='#3B82F6', width=2)
+        ))
+        fig.add_trace(go.Scatter(
+            y=[tx['metrics']['tsg'] for tx in recent_tx],
+            mode='lines',
+            name='TSG',
+            line=dict(color='#10B981', width=2)
+        ))
+        
         fig.update_layout(
-            height=400,
-            yaxis_range=[0, 1],
-            paper_bgcolor='rgba(76,29,149,0.3)',
+            paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='white', size=12),
-            xaxis=dict(gridcolor='rgba(255,255,255,0.1)'),
-            yaxis=dict(gridcolor='rgba(255,255,255,0.1)'),
-            margin=dict(l=20, r=20, t=20, b=20)
+            font=dict(color='white', size=14),
+            xaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.1)'),
+            yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.1)', range=[0, 1]),
+            height=400,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("Lancez la simulation pour voir le graphique")
+        st.info("Au moins 2 transactions nécessaires")
 
-st.markdown("---")
+st.divider()
 
 # Section Jury
-st.markdown("### 🤖 Autonomous Banking Decision Robot")
+st.subheader("🤖 Autonomous Banking Decision Robot")
 st.caption("Future of Work | Track 3: Robotic Interaction and Task Execution")
 
 st.markdown("""
@@ -524,10 +412,12 @@ with col2:
     """)
 
 with col3:
-    st.success("""
+    st.info("""
     **✅ Ce qu'il CHOISIT**
     
     AUTORISER (83%), ANALYSER (4%), BLOQUER (13%) avec justification complète
     """)
 
-st.caption("💡 Valeur Business: Réduction de 90% du temps de traitement, augmentation de 96% de la précision, ROI mesurable en temps réel")
+st.success("""
+💡 **Valeur Business:** Réduction de 90% du temps de traitement, augmentation de 96% de la précision, ROI mesurable en temps réel
+""")

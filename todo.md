@@ -66,9 +66,15 @@
 
 ## Corrections Streamlit
 
-- [ ] Ajouter la section "Décision Actuelle" avec badge coloré et raison détaillée
-- [ ] Ajouter les 4 métriques en cartes (IR, CIZ, DTS, TSG) en haut
-- [ ] Corriger l'affichage des graphiques Plotly
-- [ ] Améliorer le journal des événements avec badges colorés et expand/collapse
-- [ ] Ajouter l'analyse Gemini AI simulée
-- [ ] Améliorer les boutons de contrôle (design et disposition)
+- [x] Ajouter la section "Décision Actuelle" avec badge coloré et raison détaillée
+- [x] Ajouter les 4 métriques en cartes (IR, CIZ, DTS, TSG) en haut
+- [x] Corriger l'affichage des graphiques Plotly
+- [x] Améliorer le journal des événements avec badges colorés et expand/collapse
+- [x] Ajouter l'analyse Gemini AI simulée
+- [x] Améliorer les boutons de contrôle (design et disposition)
+
+## Corrections Finales Streamlit
+
+- [ ] Corriger l'affichage des métriques en cartes (IR, CIZ, DTS, TSG)
+- [ ] Afficher les statistiques décisionnelles (AUTORISER/ANALYSER/BLOQUER)
+- [ ] Générer et afficher les graphiques complets (Distribution + Évolution)
