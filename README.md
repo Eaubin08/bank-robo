@@ -8,7 +8,9 @@
 
 ## 🔗 Démo en Direct
 
-**Accès immédiat :** [https://3000-ip5ied8cvspm6oruxykv7-bff6e46a.us2.manus.computer](https://3000-ip5ied8cvspm6oruxykv7-bff6e46a.us2.manus.computer)
+**Accès immédiat :** [http://45.32.151.185/](http://45.32.151.185/)
+
+⚠️ **Note** : L'URL Manus (https://3000-ip5ied8cvspm6oruxykv7-bff6e46a.us2.manus.computer) est temporaire. La démo officielle du hackathon est hébergée sur Vultr.
 
 Testez le robot décisionnel autonome directement dans votre navigateur !
 
@@ -18,6 +20,20 @@ Testez le robot décisionnel autonome directement dans votre navigateur !
 3. Consultez les décisions, métriques, et graphiques
 4. Testez les modes Batch (10, 50, 100, 500 transactions)
 5. Exportez les données en CSV pour analyse
+
+---
+
+## ✅ Checklist Soumission Hackathon
+
+**Deadline : 14 Février 2026, 23:59 CET**
+
+- [ ] **Vidéo démo** (3-5 min) créée et uploadée sur YouTube/Vimeo
+- [ ] **Post Twitter/X** avec @lablabai ET @Surgexyz_ dans le MÊME post (obligatoire pour gagner)
+- [ ] **Lien Twitter** copié pour le formulaire de soumission
+- [x] **URL Vultr publique** : http://45.32.151.185/
+- [x] **Repository GitHub public** : https://github.com/Eaubin08/bank-robo
+- [x] **README complet** avec documentation
+- [ ] **Formulaire lablab.ai** rempli avec tous les liens
 
 ---
 

@@ -245,3 +245,8 @@
 ## Correction badge Gemini (session 11 Feb - round 5)
 
 - [ ] Ajouter le badge de statut Gemini (rouge "⚠️ API Rate-limitée") dans la section "Analyse Gemini AI" de "Décision Actuelle" quand l'analyse est indisponible
+
+## Préparation soumission hackathon (deadline 14 fév 23:59 CET)
+- [x] Remplacer l'URL Manus par l'URL Vultr (http://45.32.151.185/) dans le README ligne 11
+- [x] Ajouter section "Checklist Soumission Hackathon" dans le README après "🔗 Démo en Direct"
+- [x] Créer fichier SUBMISSION_CHECKLIST.md avec les étapes de soumission détaillées (vidéo, Twitter, formulaire)
