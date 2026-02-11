@@ -225,3 +225,9 @@
 - [x] Incohérence chiffres : résolu en synchronisant les compteurs (transactionCount utilisé partout)
 - [x] Utilisation Gemini : calcul corrigé pour exclure "indisponible", "manquante", "non disponible", "Erreur"
 - [x] Analyse Gemini : réaffichée dans "Décision Actuelle" avec style grisé quand indisponible
+
+## Bug : Utilisation Gemini et Analyse individuelle (session 11 Feb - round 2)
+
+- [ ] "Utilisation Gemini" toujours à 0% malgré la correction du filtre → DIAGNOSTIC : Gemini rate-limité (429), toutes les analyses sont "indisponible" donc 0/41 passent le filtre. SOLUTION : ajouter cache 30s
+- [x] Analyse Gemini individuelle s'affiche correctement dans "Décision Actuelle" (grisée quand indisponible)
+- [x] Implémenter cache Gemini (30s TTL) pour éviter rate-limit et faire monter Utilisation Gemini à 80-90% → IMPLÉMENTÉ mais Gemini toujours rate-limité (429), il faut attendre que le quota Google se réinitialise

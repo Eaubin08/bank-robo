@@ -71,6 +71,31 @@ function calculateOntologicalTests(
 }
 
 /**
+ * Gemini analysis cache to avoid rate-limiting (429 errors)
+ * Cache key: scenario name + decision
+ * TTL: 30 seconds
+ */
+const geminiCache = new Map<string, { analysis: string; timestamp: number }>();
+const GEMINI_CACHE_TTL_MS = 30000; // 30 seconds
+
+function getCachedGeminiAnalysis(cacheKey: string): string | null {
+  const cached = geminiCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < GEMINI_CACHE_TTL_MS) {
+    return cached.analysis;
+  }
+  return null;
+}
+
+function setCachedGeminiAnalysis(cacheKey: string, analysis: string): void {
+  geminiCache.set(cacheKey, { analysis, timestamp: Date.now() });
+  // Clean up old entries (keep cache size reasonable)
+  if (geminiCache.size > 100) {
+    const oldestKey = Array.from(geminiCache.keys())[0];
+    geminiCache.delete(oldestKey);
+  }
+}
+
+/**
  * Helper: get Gemini model instance
  */
 async function getGeminiModel() {
@@ -87,6 +112,13 @@ async function getGeminiModel() {
  * Use Gemini AI to analyze the transaction and provide reasoning
  */
 async function analyzeWithGemini(scenario: Scenario, metrics: DecisionResult["metrics"]): Promise<string> {
+  // Check cache first to avoid rate-limiting
+  const cacheKey = `${scenario.name}-${scenario.expectedDecision}`;
+  const cachedAnalysis = getCachedGeminiAnalysis(cacheKey);
+  if (cachedAnalysis) {
+    return cachedAnalysis;
+  }
+
   try {
     const model = await getGeminiModel();
 
@@ -115,7 +147,11 @@ DÉCISION DU SYSTÈME : ${scenario.expectedDecision}
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    return text || "Analyse Gemini non disponible";
+    const analysis = text || "Analyse Gemini non disponible";
+    
+    // Cache the successful analysis
+    setCachedGeminiAnalysis(cacheKey, analysis);
+    return analysis;
   } catch (error) {
     console.error("[Gemini] Error analyzing transaction:", error);
     return "Analyse Gemini temporairement indisponible";
