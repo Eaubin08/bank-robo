@@ -6,6 +6,21 @@
 
 ---
 
+## 🔗 Démo en Direct
+
+**Accès immédiat :** [https://3000-ip5ied8cvspm6oruxykv7-bff6e46a.us2.manus.computer](https://3000-ip5ied8cvspm6oruxykv7-bff6e46a.us2.manus.computer)
+
+Testez le robot décisionnel autonome directement dans votre navigateur !
+
+**Instructions rapides** :
+1. Cliquez sur "▶ Démarrer" pour lancer la simulation en temps réel
+2. Observez le ROI augmenter de 0M € en direct
+3. Consultez les décisions, métriques, et graphiques
+4. Testez les modes Batch (10, 50, 100, 500 transactions)
+5. Exportez les données en CSV pour analyse
+
+---
+
 ## 🎯 Vue d'Ensemble
 
 **Bank Safety Lab** est un **robot décisionnel autonome** qui opère dans un environnement simulé de transactions bancaires. Le système démontre comment l'IA peut remplacer ou assister les analystes humains dans la détection de fraude et la validation de transactions en temps réel.

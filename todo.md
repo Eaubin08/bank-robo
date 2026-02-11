@@ -81,9 +81,19 @@
 
 ## Bugs Streamlit Identifiés
 
-- [ ] Statistiques décisionnelles bloquées à 0 (AUTORISER/ANALYSER/BLOQUER)
-- [ ] Journal des événements vide malgré transactions
-- [ ] Graphiques non affichés ("Aucune donnée disponible")
-- [ ] Section "Décision Actuelle" non affichée
-- [ ] Forcer le rafraîchissement avec st.session_state["_last_update"]
-- [ ] Corriger la division par zéro (total or 1)
+- [x] Statistiques décisionnelles bloquées à 0 (AUTORISER/ANALYSER/BLOQUER)
+- [x] Journal des événements vide malgré transactions
+- [x] Graphiques non affichés ("Aucune donnée disponible")
+- [x] Section "Décision Actuelle" non affichée
+- [x] Forcer le rafraîchissement avec st.session_state["_last_update"]
+- [x] Corriger la division par zéro (total or 1)
+
+## Migration vers Manus (Déploiement Principal)
+
+- [x] Mettre à jour README.md avec l'URL Manus en haut
+- [x] Créer DEPLOYMENT.md pour documenter le déploiement Manus
+- [x] Archiver streamlit_app.py dans /archive
+- [x] Créer VIDEO_SCRIPT.md pour la démo de 2-3 minutes
+- [x] Créer TWITTER_POST.md avec le post X/Twitter préparé
+- [ ] Pousser tous les changements sur GitHub
+- [ ] Créer le checkpoint final
