@@ -10,8 +10,6 @@
 
 **Instant Access:** [http://45.32.151.185/](http://45.32.151.185/)
 
-⚠️ **Note**: The Manus URL (https://3000-ip5ied8cvspm6oruxykv7-bff6e46a.us2.manus.computer) is temporary. The official hackathon demo is hosted on Vultr.
-
 Test the autonomous decision robot directly in your browser!
 
 **Quick Instructions**:
@@ -483,8 +481,6 @@ Created for the **Launch Fund AI × Robotics** hackathon (lablab.ai)
 ## 🔗 Démo en Direct
 
 **Accès immédiat :** [http://45.32.151.185/](http://45.32.151.185/)
-
-⚠️ **Note** : L'URL Manus (https://3000-ip5ied8cvspm6oruxykv7-bff6e46a.us2.manus.computer) est temporaire. La démo officielle du hackathon est hébergée sur Vultr.
 
 Testez le robot décisionnel autonome directement dans votre navigateur !
 

@@ -262,3 +262,7 @@
 - [x] Traduire tout le README en anglais (version complète)
 - [x] Réorganiser : mettre la version anglaise EN PREMIER, puis la version française après
 - [x] Ajouter un séparateur clair entre les 2 versions (ex: "---\n\n# 🇫🇷 Version Française\n\n---")
+
+## Nettoyage README (suppression liens Manus)
+- [x] Retirer la note "⚠️ **Note** : L'URL Manus est temporaire" des sections EN et FR
+- [x] Simplifier la section "🔗 Démo en Direct" pour ne garder que l'URL Vultr
