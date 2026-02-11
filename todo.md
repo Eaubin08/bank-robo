@@ -121,3 +121,9 @@
 - [ ] Mettre à jour README.md avec URL Vultr finale
 - [ ] Mettre à jour DEPLOYMENT.md avec détails Vultr
 - [ ] Créer checkpoint final
+
+## Correction ROI (montants réalistes)
+
+- [x] Changer le ROI de millions d'euros à euros (multiplier par 1000)
+- [x] Mettre à jour l'affichage du ROI dans le frontend (enlever "M €")
+- [ ] Tester sur Vultr

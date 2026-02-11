@@ -27,7 +27,7 @@ export interface DecisionResult {
     negativeMemoryReflexes: number;
     emergentBehaviorWatch: number;
   };
-  roiContribution: number; // En millions d'euros
+  roiContribution: number; // En euros
 }
 
 /**
@@ -161,7 +161,7 @@ function makeDecision(
     return {
       decision: "ANALYSER",
       reason: `Transaction en analyse : vérification manuelle requise (TSG: ${(metrics.tsg * 100).toFixed(0)}%)`,
-      roiContribution: Math.floor(scenario.sensors.amount * 5 * 0.5), // 50% du ROI normal (réduit de 95%)
+      roiContribution: Math.floor(scenario.sensors.amount * 10 * 1000 * 0.5), // En euros (50% du ROI normal)
     };
   }
 
@@ -169,7 +169,7 @@ function makeDecision(
   return {
     decision: "AUTORISER",
     reason: `Transaction autorisée : ${scenario.description} - Profil sécurisé (Score: ${(avgOntologicalScore * 100).toFixed(1)}%)`,
-    roiContribution: Math.floor(scenario.sensors.amount * 10), // ROI basé sur le montant (réduit de 95%)
+    roiContribution: Math.floor(scenario.sensors.amount * 10 * 1000), // En euros
   };
 }
 

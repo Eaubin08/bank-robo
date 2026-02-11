@@ -244,7 +244,7 @@ export default function BankingDashboard() {
           </div>
           <div className="text-right">
             <div className="text-5xl font-bold text-yellow-400">
-              ROI: {totalROI}M €
+              ROI: {totalROI.toLocaleString('fr-FR')} €
             </div>
             <div className="text-sm text-gray-400 mt-1">
               {transactionCount} transactions processed
@@ -512,7 +512,7 @@ export default function BankingDashboard() {
                       <span className="text-white font-semibold text-sm">{tx.scenario.name}</span>
                     </div>
                     <span className="text-gray-400 text-xs">
-                      #{transactionHistory.length - index} • ROI: +{tx.roiContribution.toFixed(0)}M €
+                      #{transactionHistory.length - index} • ROI: +{tx.roiContribution.toLocaleString('fr-FR')} €
                     </span>
                   </div>
                   <div className="text-gray-300 text-xs">{tx.reason}</div>
