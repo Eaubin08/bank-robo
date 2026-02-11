@@ -63,3 +63,12 @@
 - [x] Ajouter les statistiques décisionnelles (tableau avec pourcentages et compteurs)
 - [x] Ajouter le journal des événements (liste des dernières transactions avec horodatage)
 - [x] Corriger le bug de l'export CSV
+
+## Corrections Streamlit
+
+- [ ] Ajouter la section "Décision Actuelle" avec badge coloré et raison détaillée
+- [ ] Ajouter les 4 métriques en cartes (IR, CIZ, DTS, TSG) en haut
+- [ ] Corriger l'affichage des graphiques Plotly
+- [ ] Améliorer le journal des événements avec badges colorés et expand/collapse
+- [ ] Ajouter l'analyse Gemini AI simulée
+- [ ] Améliorer les boutons de contrôle (design et disposition)
