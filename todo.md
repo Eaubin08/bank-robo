@@ -257,3 +257,8 @@
 - [x] Ajouter section "🏗️ Principes d'Architecture" avec Design Pattern Moteur vs Justification
 - [x] Ajouter diagramme ASCII "📊 Architecture Décisionnelle" montrant le flow complet (INPUT → Layer 1-2-3 → POST-PROCESSING → OUTPUT)
 - [x] Retirer "[ÉCRAN: Dashboard avec métriques visibles]" du script vidéo (partie inutile) → DÉJÀ FAIT (pas dans le README)
+
+## Traduction README en anglais (accessibilité internationale)
+- [x] Traduire tout le README en anglais (version complète)
+- [x] Réorganiser : mettre la version anglaise EN PREMIER, puis la version française après
+- [x] Ajouter un séparateur clair entre les 2 versions (ex: "---\n\n# 🇫🇷 Version Française\n\n---")
