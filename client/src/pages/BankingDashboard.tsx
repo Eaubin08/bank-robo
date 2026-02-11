@@ -628,7 +628,22 @@ export default function BankingDashboard() {
               </div>
               {currentTransaction.geminiAnalysis && (
                 <div>
-                  <p className="text-sm text-gray-400">Analyse Gemini AI</p>
+                  <p className="text-sm text-gray-400 flex items-center gap-2">
+                    Analyse Gemini AI
+                    <Badge variant="outline" className={`text-xs ${
+                      currentTransaction.geminiAnalysis.includes("indisponible") || 
+                      currentTransaction.geminiAnalysis.includes("manquante") ||
+                      currentTransaction.geminiAnalysis.includes("non disponible")
+                        ? "bg-red-900/30 text-red-400 border-red-500/50"
+                        : "bg-green-900/30 text-green-400 border-green-500/50"
+                    }`}>
+                      {currentTransaction.geminiAnalysis.includes("indisponible") || 
+                       currentTransaction.geminiAnalysis.includes("manquante") ||
+                       currentTransaction.geminiAnalysis.includes("non disponible")
+                        ? "⚠️ Rate-limitée"
+                        : "✓ Active"}
+                    </Badge>
+                  </p>
                   <p className={`text-sm italic p-3 rounded-lg border ${
                     currentTransaction.geminiAnalysis.includes("indisponible") || 
                     currentTransaction.geminiAnalysis.includes("manquante") ||

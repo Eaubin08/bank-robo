@@ -241,3 +241,7 @@
 
 - [x] Ajouter badge de statut Gemini (vert si API répond, rouge si rate-limitée) sur la section "Performance Insights"
 - [x] Corriger l'export CSV pour exporter uniquement les transactions de la session en cours (nom de fichier amélioré : bank-safety-session-XXtx-timestamp.csv)
+
+## Correction badge Gemini (session 11 Feb - round 5)
+
+- [ ] Ajouter le badge de statut Gemini (rouge "⚠️ API Rate-limitée") dans la section "Analyse Gemini AI" de "Décision Actuelle" quand l'analyse est indisponible
