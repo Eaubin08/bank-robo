@@ -165,3 +165,9 @@
 - [x] Retirer les boutons Batch (10/50/100/500)
 - [x] Améliorer la logique Play/Pause/Stop avec états clairs
 - [x] Ajouter un vrai Reset sur Stop (ROI=0, compteurs=0, historique vidé)
+
+## Correction déploiement Vultr - Support SQLite
+
+- [ ] Modifier drizzle.config.ts pour supporter SQLite automatiquement
+- [ ] Pousser sur GitHub
+- [ ] Tester le déploiement sur Vultr avec SQLite
