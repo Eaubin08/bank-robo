@@ -4,6 +4,92 @@
 
 ---
 
+## CONTEXT
+
+This project "Bank Safety Lab - Autonomous Banking Decision Robot" is a **demonstration layer** of a larger research system under development. It was created specifically for the **Launch Fund AI × Robotics** hackathon (lablab.ai) organized in February 2026.
+
+---
+
+## RESERVED RIGHTS
+
+This source code, documentation, and all associated elements (architecture, algorithms, metrics, ontological tests, Gemini AI integration) are the **exclusive intellectual property** of the author.
+
+**Any use, reproduction, modification, distribution, or commercial exploitation is strictly prohibited without prior written authorization.**
+
+---
+
+## SPECIAL HACKATHON AUTHORIZATION
+
+A **limited and non-transferable authorization** is granted to the following entities **only within the scope of the Launch Fund AI × Robotics hackathon**:
+
+### Authorized Entities
+- **lablab.ai** (hackathon organizer)
+- **Hackathon jury** (Launch Fund AI × Robotics, Track 3)
+- **Hackathon sponsors** (Launch Fund, Surge AI, official partners)
+
+### Granted Rights (Temporary)
+✅ **Access**: View source code via public GitHub repository  
+✅ **Evaluation**: Test the application via demo URL (http://45.32.151.185/)  
+✅ **Analysis**: Examine architecture, algorithms, and documentation  
+✅ **Presentation**: Use screenshots/videos for hackathon communication  
+
+### Restrictions
+❌ **No copying**: No reproduction of code or algorithms  
+❌ **No modification**: No forks, derivatives, or adaptations  
+❌ **No commercial use**: No use for profit  
+❌ **No redistribution**: No sharing outside hackathon context  
+
+### Authorization Duration
+This authorization automatically expires on **February 28, 2026** (14 days after hackathon deadline). After this date, the repository may be made private without notice.
+
+---
+
+## INTELLECTUAL PROPERTY PROTECTION
+
+### Protected Elements
+This project contains **proprietary innovations** including but not limited to:
+
+1. **3-layer decision architecture** (Business Sensors → Ontological Tests → Final Decision)
+2. **Banking metrics system** (IR, CIZ, DTS, TSG) with calculation formulas
+3. **9 ontological tests** (TIL, AHG, ZTF, IR, CIZ, DTS, TSG, NMR, EBW) and their thresholds
+4. **Gemini AI integration** for explanatory post-processing (engine/AI separation)
+5. **Risk calculation algorithms** and confidence scoring
+6. **Design patterns** for auditability, reproducibility, and banking governance
+
+### Patents and Trademarks
+The author reserves the right to file **patents** or **trademarks** on all or part of this system without prior notice.
+
+---
+
+## LIMITATION OF LIABILITY
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DAMAGES ARISING FROM THE USE OF THIS SOFTWARE.
+
+---
+
+## CONTACT
+
+For any commercial license request, collaboration, or usage authorization, please contact the author via the GitHub repository: https://github.com/Eaubin08/bank-robo
+
+---
+
+**Effective Date**: February 11, 2026  
+**Jurisdiction**: France
+
+---
+---
+---
+
+# 🇫🇷 VERSION FRANÇAISE
+
+---
+
+# LICENCE PROPRIÉTAIRE - BANK SAFETY LAB
+
+**Copyright © 2026 - Tous Droits Réservés**
+
+---
+
 ## CONTEXTE
 
 Ce projet "Bank Safety Lab - Autonomous Banking Decision Robot" est une **couche démonstrative** d'un système de recherche plus vaste en cours de développement. Il a été créé spécifiquement pour le hackathon **Launch Fund AI × Robotics** (lablab.ai) organisé en février 2026.

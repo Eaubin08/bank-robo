@@ -271,3 +271,7 @@
 - [x] Créer fichier LICENSE avec licence personnalisée (protection IP + autorisation jury hackathon)
 - [x] Expliquer dans LICENSE que c'est une couche d'un projet plus vaste
 - [x] Mettre à jour README pour refléter la vraie licence (pas MIT)
+
+## Traduction licence en anglais
+- [x] Ajouter version anglaise de la licence en premier dans le fichier LICENSE
+- [x] Garder la version française après avec séparateur clair
