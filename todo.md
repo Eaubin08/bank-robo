@@ -236,3 +236,8 @@
 
 - [x] Retirer la carte "Utilisation Gemini 0.0%" du dashboard (garder Précision, Temps Moyen, Confiance)
 - [x] L'analyse Gemini individuelle s'affiche correctement dans "Décision Actuelle" (grisée quand indisponible)
+
+## Améliorations finales (session 11 Feb - round 4)
+
+- [x] Ajouter badge de statut Gemini (vert si API répond, rouge si rate-limitée) sur la section "Performance Insights"
+- [x] Corriger l'export CSV pour exporter uniquement les transactions de la session en cours (nom de fichier amélioré : bank-safety-session-XXtx-timestamp.csv)

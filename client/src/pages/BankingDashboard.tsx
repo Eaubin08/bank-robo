@@ -384,7 +384,8 @@ export default function BankingDashboard() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `bank-safety-data-${Date.now()}.csv`;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    a.download = `bank-safety-session-${transactionHistory.length}tx-${timestamp}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -750,6 +751,15 @@ export default function BankingDashboard() {
             <CardTitle className="text-white flex items-center gap-2">
               <Zap className="w-5 h-5 text-yellow-400" />
               Performance Insights (Gemini AI)
+              <Badge variant="outline" className={`ml-auto text-xs ${
+                performanceInsights.summary.includes("indisponible") || performanceInsights.summary.includes("Erreur")
+                  ? "bg-red-900/30 text-red-400 border-red-500/50"
+                  : "bg-green-900/30 text-green-400 border-green-500/50"
+              }`}>
+                {performanceInsights.summary.includes("indisponible") || performanceInsights.summary.includes("Erreur")
+                  ? "⚠️ API Rate-limitée"
+                  : "✓ API Active"}
+              </Badge>
             </CardTitle>
             <CardDescription className="text-gray-300">
               Résumé automatique basé sur les {transactionCount} transactions de cette session
