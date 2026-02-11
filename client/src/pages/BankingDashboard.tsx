@@ -407,15 +407,6 @@ export default function BankingDashboard() {
         return avg >= 0.94;
       }).length / transactionHistory.length * 100)
     : 0;
-  const sessionGeminiUsage = transactionHistory.length > 0
-    ? (transactionHistory.filter(tx =>
-        tx.geminiAnalysis && 
-        !tx.geminiAnalysis.includes("indisponible") && 
-        !tx.geminiAnalysis.includes("manquante") &&
-        !tx.geminiAnalysis.includes("non disponible") &&
-        !tx.geminiAnalysis.includes("Erreur")
-      ).length / transactionHistory.length * 100)
-    : 0;
   const sessionConfidence = transactionHistory.length > 0
     ? (transactionHistory.reduce((sum, tx) => {
         const avg = Object.values(tx.ontologicalTests).reduce((a, b) => a + b, 0) / 9;
@@ -648,7 +639,7 @@ export default function BankingDashboard() {
                   </p>
                 </div>
               )}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 {Object.entries(currentTransaction.metrics).map(([key, value]) => {
                   const def = MAIN_METRIC_DEFINITIONS[key];
                   if (!def) return null;
@@ -798,7 +789,7 @@ export default function BankingDashboard() {
               </div>
             )}
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="bg-green-900/30 p-3 rounded-lg border border-green-500/50 cursor-help">
@@ -819,17 +810,6 @@ export default function BankingDashboard() {
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-800 text-white border border-blue-500/50 p-2 max-w-xs">
                   <p className="text-xs">Temps de réponse réel moyen du backend (mesuré sur {responseTimes.length} appels). Inclut le traitement + analyse Gemini.</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50 cursor-help">
-                    <div className="text-purple-400 text-xs font-semibold mb-1">Utilisation Gemini</div>
-                    <div className="text-white text-2xl font-bold">{sessionGeminiUsage.toFixed(1)}%</div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="bg-slate-800 text-white border border-purple-500/50 p-2 max-w-xs">
-                  <p className="text-xs">% de transactions où l'analyse Gemini AI a répondu avec succès (hors erreurs/rate-limit).</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>

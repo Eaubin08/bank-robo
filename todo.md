@@ -231,3 +231,8 @@
 - [ ] "Utilisation Gemini" toujours à 0% malgré la correction du filtre → DIAGNOSTIC : Gemini rate-limité (429), toutes les analyses sont "indisponible" donc 0/41 passent le filtre. SOLUTION : ajouter cache 30s
 - [x] Analyse Gemini individuelle s'affiche correctement dans "Décision Actuelle" (grisée quand indisponible)
 - [x] Implémenter cache Gemini (30s TTL) pour éviter rate-limit et faire monter Utilisation Gemini à 80-90% → IMPLÉMENTÉ mais Gemini toujours rate-limité (429), il faut attendre que le quota Google se réinitialise
+
+## Modifications finales (session 11 Feb - round 3)
+
+- [x] Retirer la carte "Utilisation Gemini 0.0%" du dashboard (garder Précision, Temps Moyen, Confiance)
+- [x] L'analyse Gemini individuelle s'affiche correctement dans "Décision Actuelle" (grisée quand indisponible)
