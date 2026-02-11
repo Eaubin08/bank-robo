@@ -57,3 +57,9 @@
 - ROI dynamique fonctionne parfaitement
 - Gemini AI intégré et fonctionnel
 - Dashboard interactif et responsive
+
+## Améliorations Demandées
+
+- [x] Ajouter les statistiques décisionnelles (tableau avec pourcentages et compteurs)
+- [x] Ajouter le journal des événements (liste des dernières transactions avec horodatage)
+- [x] Corriger le bug de l'export CSV

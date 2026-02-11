@@ -64,6 +64,7 @@ export default function BankingDashboard() {
   const [currentTransaction, setCurrentTransaction] = useState<TransactionResult | null>(null);
   const [decisionCounts, setDecisionCounts] = useState({ AUTORISER: 0, ANALYSER: 0, BLOQUER: 0 });
   const [metricsHistory, setMetricsHistory] = useState<TransactionResult["metrics"][]>([]);
+  const [transactionHistory, setTransactionHistory] = useState<TransactionResult[]>([]);
   const [ontologicalScores, setOntologicalScores] = useState<TransactionResult["ontologicalTests"]>({
     timeIsLaw: 0.96,
     absoluteHoldGate: 0.96,
@@ -94,6 +95,7 @@ export default function BankingDashboard() {
       }));
       setMetricsHistory((prev) => [...prev.slice(-49), result.metrics]);
       setOntologicalScores(result.ontologicalTests);
+      setTransactionHistory((prev) => [...prev.slice(-99), result]);
     } catch (error) {
       console.error("Error processing transaction:", error);
     }
@@ -142,17 +144,34 @@ export default function BankingDashboard() {
 
   // Export CSV
   const exportCSV = () => {
-    const headers = ["Transaction", "Decision", "IR", "CIZ", "DTS", "TSG", "ROI"];
-    const rows = [[transactionCount, currentTransaction?.decision || "", currentTransaction?.metrics.ir || 0, currentTransaction?.metrics.ciz || 0, currentTransaction?.metrics.dts || 0, currentTransaction?.metrics.tsg || 0, totalROI]];
+    if (transactionHistory.length === 0) {
+      alert("Aucune transaction à exporter. Lancez d'abord une simulation.");
+      return;
+    }
 
-    const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\\n");
+    const headers = ["#", "Scenario", "Decision", "IR", "CIZ", "DTS", "TSG", "ROI", "Raison"];
+    const rows = transactionHistory.map((tx, index) => [
+      index + 1,
+      tx.scenario.name,
+      tx.decision,
+      tx.metrics.ir.toFixed(2),
+      tx.metrics.ciz.toFixed(2),
+      tx.metrics.dts.toFixed(2),
+      tx.metrics.tsg.toFixed(2),
+      tx.roiContribution.toFixed(0),
+      `"${tx.reason.replace(/"/g, '""')}"`,
+    ]);
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `bank-safety-data-${Date.now()}.csv`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
@@ -385,6 +404,88 @@ export default function BankingDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Decision Statistics */}
+      <Card className="bg-slate-800/50 border-purple-500/30 mb-6">
+        <CardHeader>
+          <CardTitle className="text-white">📊 Statistiques Décisionnelles</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-green-900/30 p-4 rounded-lg border border-green-500/50">
+              <div className="text-green-400 text-sm font-semibold mb-1">AUTORISER</div>
+              <div className="text-white text-3xl font-bold">{decisionCounts.AUTORISER}</div>
+              <div className="text-green-300 text-sm mt-1">
+                {transactionCount > 0 ? ((decisionCounts.AUTORISER / transactionCount) * 100).toFixed(1) : 0}%
+              </div>
+            </div>
+            <div className="bg-yellow-900/30 p-4 rounded-lg border border-yellow-500/50">
+              <div className="text-yellow-400 text-sm font-semibold mb-1">ANALYSER</div>
+              <div className="text-white text-3xl font-bold">{decisionCounts.ANALYSER}</div>
+              <div className="text-yellow-300 text-sm mt-1">
+                {transactionCount > 0 ? ((decisionCounts.ANALYSER / transactionCount) * 100).toFixed(1) : 0}%
+              </div>
+            </div>
+            <div className="bg-red-900/30 p-4 rounded-lg border border-red-500/50">
+              <div className="text-red-400 text-sm font-semibold mb-1">BLOQUER</div>
+              <div className="text-white text-3xl font-bold">{decisionCounts.BLOQUER}</div>
+              <div className="text-red-300 text-sm mt-1">
+                {transactionCount > 0 ? ((decisionCounts.BLOQUER / transactionCount) * 100).toFixed(1) : 0}%
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Transaction History */}
+      <Card className="bg-slate-800/50 border-purple-500/30 mb-6">
+        <CardHeader>
+          <CardTitle className="text-white">📝 Journal des Événements</CardTitle>
+          <CardDescription className="text-gray-400">Dernières {Math.min(transactionHistory.length, 10)} transactions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {transactionHistory.length === 0 ? (
+            <div className="text-gray-400 text-center py-8">Aucune transaction pour le moment. Lancez la simulation !</div>
+          ) : (
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {transactionHistory.slice(-10).reverse().map((tx, index) => (
+                <div
+                  key={transactionHistory.length - index}
+                  className="bg-slate-900/50 p-3 rounded-lg border border-slate-700 hover:border-purple-500/50 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={
+                          tx.decision === "AUTORISER"
+                            ? "bg-green-900/30 text-green-400 border-green-500/50"
+                            : tx.decision === "ANALYSER"
+                            ? "bg-yellow-900/30 text-yellow-400 border-yellow-500/50"
+                            : "bg-red-900/30 text-red-400 border-red-500/50"
+                        }
+                      >
+                        {tx.decision}
+                      </Badge>
+                      <span className="text-white font-semibold text-sm">{tx.scenario.name}</span>
+                    </div>
+                    <span className="text-gray-400 text-xs">
+                      #{transactionHistory.length - index} • ROI: +{tx.roiContribution.toFixed(0)}M €
+                    </span>
+                  </div>
+                  <div className="text-gray-300 text-xs">{tx.reason}</div>
+                  <div className="flex gap-4 mt-2 text-xs">
+                    <span className="text-red-400">IR: {tx.metrics.ir.toFixed(2)}</span>
+                    <span className="text-yellow-400">CIZ: {tx.metrics.ciz.toFixed(2)}</span>
+                    <span className="text-blue-400">DTS: {tx.metrics.dts.toFixed(2)}</span>
+                    <span className="text-green-400">TSG: {tx.metrics.tsg.toFixed(2)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Charts */}
       <div className="grid grid-cols-2 gap-6 mb-6">
