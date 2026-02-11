@@ -148,3 +148,14 @@
 - [ ] Tester localement les 3 fonctionnalités Gemini
 - [ ] Déployer sur Vultr
 - [ ] Vérifier l'affichage et les performances
+
+## BUG CRITIQUE : Procédures Gemini utilisent DB au lieu de mémoire
+
+- [ ] Analyser comment les transactions sont stockées (mémoire vs DB)
+- [ ] Modifier `server/routers.ts` : getPerformanceInsights pour utiliser mémoire
+- [ ] Modifier `server/routers.ts` : analyzeTrends pour utiliser mémoire
+- [ ] Modifier `server/routers.ts` : generateReport pour utiliser mémoire
+- [ ] Créer un système de stockage global des transactions en mémoire
+- [ ] Tester localement
+- [ ] Pousser sur GitHub
+- [ ] Déployer sur Vultr
