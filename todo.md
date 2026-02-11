@@ -95,5 +95,5 @@
 - [x] Archiver streamlit_app.py dans /archive
 - [x] Créer VIDEO_SCRIPT.md pour la démo de 2-3 minutes
 - [x] Créer TWITTER_POST.md avec le post X/Twitter préparé
-- [ ] Pousser tous les changements sur GitHub
+- [x] Pousser tous les changements sur GitHub
 - [ ] Créer le checkpoint final
