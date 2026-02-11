@@ -441,7 +441,16 @@ A: The Express backend is deployable on Vultr VM (see DEPLOYMENT.md). The archit
 
 ## 📝 License
 
-MIT License - See [LICENSE](./LICENSE) for details
+**Proprietary License - All Rights Reserved**
+
+This project is protected by a proprietary license with limited authorization for the hackathon jury. See [LICENSE](./LICENSE) for complete terms.
+
+**Key Points:**
+- ✅ Hackathon jury can evaluate and test the project
+- ❌ No commercial use, modification, or redistribution
+- 📅 Hackathon authorization expires February 28, 2026
+
+This is a demonstration layer of a larger research project under development.
 
 ---
 
@@ -913,7 +922,16 @@ R: Le backend Express est déployable sur Vultr VM (voir DEPLOYMENT.md). L'archi
 
 ## 📝 Licence
 
-MIT License - Voir [LICENSE](./LICENSE) pour plus de détails
+**Licence Propriétaire - Tous Droits Réservés**
+
+Ce projet est protégé par une licence propriétaire avec autorisation limitée pour le jury du hackathon. Voir [LICENSE](./LICENSE) pour les termes complets.
+
+**Points Clés :**
+- ✅ Le jury du hackathon peut évaluer et tester le projet
+- ❌ Aucune utilisation commerciale, modification, ou redistribution
+- 📅 L'autorisation hackathon expire le 28 février 2026
+
+Ceci est une couche démonstrative d'un projet de recherche plus vaste en développement.
 
 ---
 

@@ -1,0 +1,77 @@
+# PROPRIETARY LICENSE - BANK SAFETY LAB
+
+**Copyright © 2026 - All Rights Reserved**
+
+---
+
+## CONTEXTE
+
+Ce projet "Bank Safety Lab - Autonomous Banking Decision Robot" est une **couche démonstrative** d'un système de recherche plus vaste en cours de développement. Il a été créé spécifiquement pour le hackathon **Launch Fund AI × Robotics** (lablab.ai) organisé en février 2026.
+
+---
+
+## DROITS RÉSERVÉS
+
+Ce code source, cette documentation, et tous les éléments associés (architecture, algorithmes, métriques, tests ontologiques, intégration Gemini AI) sont la **propriété intellectuelle exclusive** de l'auteur.
+
+**Toute utilisation, reproduction, modification, distribution, ou exploitation commerciale est strictement interdite sans autorisation écrite préalable.**
+
+---
+
+## AUTORISATION SPÉCIALE HACKATHON
+
+Une **autorisation limitée et non-transférable** est accordée aux entités suivantes **uniquement dans le cadre du hackathon Launch Fund AI × Robotics** :
+
+### Entités Autorisées
+- **lablab.ai** (organisateur du hackathon)
+- **Jury du hackathon** (Launch Fund AI × Robotics, Track 3)
+- **Sponsors du hackathon** (Launch Fund, Surge AI, partenaires officiels)
+
+### Droits Accordés (Temporaires)
+✅ **Accès** : Consulter le code source via le repository GitHub public  
+✅ **Évaluation** : Tester l'application via l'URL de démo (http://45.32.151.185/)  
+✅ **Analyse** : Examiner l'architecture, les algorithmes, et la documentation  
+✅ **Présentation** : Utiliser des captures d'écran/vidéos pour la communication du hackathon  
+
+### Restrictions
+❌ **Interdiction de copie** : Aucune reproduction du code ou des algorithmes  
+❌ **Interdiction de modification** : Aucun fork, dérivé, ou adaptation  
+❌ **Interdiction commerciale** : Aucune utilisation à des fins lucratives  
+❌ **Interdiction de redistribution** : Aucun partage en dehors du contexte du hackathon  
+
+### Durée de l'Autorisation
+Cette autorisation expire automatiquement le **28 février 2026** (14 jours après la deadline du hackathon). Après cette date, le repository pourra être rendu privé sans préavis.
+
+---
+
+## PROTECTION DE LA PROPRIÉTÉ INTELLECTUELLE
+
+### Éléments Protégés
+Ce projet contient des **innovations propriétaires** incluant mais non limitées à :
+
+1. **Architecture décisionnelle 3-layer** (Capteurs Métier → Tests Ontologiques → Décision Finale)
+2. **Système de métriques bancaires** (IR, CIZ, DTS, TSG) avec formules de calcul
+3. **9 tests ontologiques** (TIL, AHG, ZTF, IR, CIZ, DTS, TSG, NMR, EBW) et leurs seuils
+4. **Intégration Gemini AI** pour post-processing explicatif (séparation moteur/IA)
+5. **Algorithmes de calcul de risque** et de scoring de confiance
+6. **Design patterns** pour auditabilité, reproductibilité, et gouvernance bancaire
+
+### Brevets et Marques
+L'auteur se réserve le droit de déposer des **brevets** ou **marques** sur tout ou partie de ce système sans notification préalable.
+
+---
+
+## LIMITATION DE RESPONSABILITÉ
+
+CE LOGICIEL EST FOURNI "TEL QUEL", SANS GARANTIE D'AUCUNE SORTE, EXPRESSE OU IMPLICITE. EN AUCUN CAS L'AUTEUR NE POURRA ÊTRE TENU RESPONSABLE DE TOUT DOMMAGE DÉCOULANT DE L'UTILISATION DE CE LOGICIEL.
+
+---
+
+## CONTACT
+
+Pour toute demande de licence commerciale, collaboration, ou autorisation d'utilisation, veuillez contacter l'auteur via le repository GitHub : https://github.com/Eaubin08/bank-robo
+
+---
+
+**Date d'effet** : 11 février 2026  
+**Juridiction** : France

@@ -266,3 +266,8 @@
 ## Nettoyage README (suppression liens Manus)
 - [x] Retirer la note "⚠️ **Note** : L'URL Manus est temporaire" des sections EN et FR
 - [x] Simplifier la section "🔗 Démo en Direct" pour ne garder que l'URL Vultr
+
+## Ajout licence propriétaire protégée
+- [x] Créer fichier LICENSE avec licence personnalisée (protection IP + autorisation jury hackathon)
+- [x] Expliquer dans LICENSE que c'est une couche d'un projet plus vaste
+- [x] Mettre à jour README pour refléter la vraie licence (pas MIT)
