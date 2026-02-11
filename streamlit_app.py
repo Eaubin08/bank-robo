@@ -217,6 +217,7 @@ if st.button("📥 Export CSV", use_container_width=True):
 # Simulation continue
 if st.session_state.is_running:
     process_transaction()
+    st.session_state["_last_update"] = time.time()  # Force update
     time.sleep(1)
     st.rerun()
 
@@ -277,22 +278,22 @@ if st.session_state.current_decision:
 st.subheader("📊 Statistiques Décisionnelles")
 col1, col2, col3 = st.columns(3)
 
-total = len(st.session_state.transactions)
+total = len(st.session_state.transactions) or 1  # Évite division par zéro
 
 with col1:
-    count = st.session_state.decision_counts["AUTORISER"]
-    pct = (count / total * 100) if total > 0 else 0
-    st.metric("✅ AUTORISER", count, f"{pct:.0f}%")
+    count_a = st.session_state.decision_counts["AUTORISER"]
+    pct_a = (count_a / total * 100) if total > 0 else 0
+    st.metric("✅ AUTORISER", f"{count_a}", f"{pct_a:.0f}%")
 
 with col2:
-    count = st.session_state.decision_counts["ANALYSER"]
-    pct = (count / total * 100) if total > 0 else 0
-    st.metric("⚠️ ANALYSER", count, f"{pct:.0f}%")
+    count_b = st.session_state.decision_counts["ANALYSER"]
+    pct_b = (count_b / total * 100) if total > 0 else 0
+    st.metric("⚠️ ANALYSER", f"{count_b}", f"{pct_b:.0f}%")
 
 with col3:
-    count = st.session_state.decision_counts["BLOQUER"]
-    pct = (count / total * 100) if total > 0 else 0
-    st.metric("🚫 BLOQUER", count, f"{pct:.0f}%")
+    count_c = st.session_state.decision_counts["BLOQUER"]
+    pct_c = (count_c / total * 100) if total > 0 else 0
+    st.metric("🚫 BLOQUER", f"{count_c}", f"{pct_c:.0f}%")
 
 st.divider()
 

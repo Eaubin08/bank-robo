@@ -75,6 +75,15 @@
 
 ## Corrections Finales Streamlit
 
-- [ ] Corriger l'affichage des métriques en cartes (IR, CIZ, DTS, TSG)
-- [ ] Afficher les statistiques décisionnelles (AUTORISER/ANALYSER/BLOQUER)
-- [ ] Générer et afficher les graphiques complets (Distribution + Évolution)
+- [x] Corriger l'affichage des métriques en cartes (IR, CIZ, DTS, TSG)
+- [x] Afficher les statistiques décisionnelles (AUTORISER/ANALYSER/BLOQUER)
+- [x] Générer et afficher les graphiques complets (Distribution + Évolution)
+
+## Bugs Streamlit Identifiés
+
+- [ ] Statistiques décisionnelles bloquées à 0 (AUTORISER/ANALYSER/BLOQUER)
+- [ ] Journal des événements vide malgré transactions
+- [ ] Graphiques non affichés ("Aucune donnée disponible")
+- [ ] Section "Décision Actuelle" non affichée
+- [ ] Forcer le rafraîchissement avec st.session_state["_last_update"]
+- [ ] Corriger la division par zéro (total or 1)
