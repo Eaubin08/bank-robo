@@ -141,6 +141,176 @@ L'application sera accessible sur `http://localhost:3000`
 
 ---
 
+## 🔧 Architecture du Moteur Décisionnel
+
+### Vue Applicative (Banking Layer)
+
+Le système utilise un **moteur décisionnel déterministe** avec 3 couches distinctes :
+
+#### Layer 1 : Capteurs Métier (VOIT)
+```typescript
+// Métriques contextuelles pour le secteur bancaire
+const metrics = {
+  IR: calculateIrreversibility(transaction),    // Risque d'annulation
+  CIZ: calculateConflictZone(transaction),      // Écart comportemental
+  DTS: calculateTimeSensitivity(transaction),   // Urgence temporelle
+  TSG: calculateTotalGuard(metrics)             // Score de protection
+};
+```
+
+**Points clés :**
+- Métriques calculées algorithmiquement (pas d'IA générative ici)
+- Valeurs dans [0, 1] pour normalisation
+- Auditables et reproductibles
+
+#### Layer 2 : Tests Ontologiques (PENSE)
+```typescript
+// 9 règles métier parallèles
+const ontologicalTests = {
+  TIL: metrics.IR < 0.3 && metrics.DTS < 0.4,   // Time Is Law
+  AHG: metrics.TSG > 0.7,                        // Absolute Hold Gate
+  ZTF: !fraudDatabase.includes(pattern),        // Zero Tolerance Flag
+  // ... 6 autres tests métier
+};
+
+// Score de précision : tests validés / 9
+const precision = (passedTests / 9) * 100;  // Ex: 96.2%
+```
+
+**Points clés :**
+- Conditions logiques explicites
+- Pas de boîte noire
+- Chaque test est auditable
+
+#### Layer 3 : Décision Finale (CHOISIT)
+```typescript
+// Policy Layer - Seuils métier
+if (precision >= 94 && metrics.TSG < 0.3) {
+  return { decision: "AUTORISER", confidence: precision };
+}
+else if (precision >= 85 || metrics.TSG < 0.6) {
+  return { decision: "ANALYSER", confidence: precision };
+}
+else {
+  return { decision: "BLOQUER", confidence: precision };
+}
+```
+
+### Séparation Moteur / IA Générative
+
+**IMPORTANT :** Gemini AI ne prend **pas** la décision.
+
+```
+Moteur Décisionnel (Déterministe)
+         ↓
+    [DÉCISION]
+         ↓
+Gemini AI (Justification uniquement)
+         ↓
+    [EXPLICATION]
+```
+
+Gemini AI intervient **après** la décision pour :
+1. Générer une justification en langage naturel
+2. Expliquer les métriques calculées
+3. Fournir un contexte humain
+
+**L'architecture garantit :**
+- Reproductibilité (même input = même décision)
+- Auditabilité (logs complets)
+- Gouvernance (moteur séparé de l'IA générative)
+
+---
+
+## 📊 Architecture Décisionnelle
+
+```
+┌─────────────────────────────────────┐
+│   TRANSACTION INPUT                 │
+│   (montant, compte, pattern, etc.)  │
+└────────────┬────────────────────────┘
+             ↓
+┌─────────────────────────────────────┐
+│   LAYER 1: MÉTRIQUES CALCULÉES      │
+│   ✓ IR (Irréversibilité)            │
+│   ✓ CIZ (Conflit Interne)           │
+│   ✓ DTS (Sensibilité Temporelle)    │
+│   ✓ TSG (Garde Totale)              │
+│   → Valeurs dans [0, 1]             │
+└────────────┬────────────────────────┘
+             ↓
+┌─────────────────────────────────────┐
+│   LAYER 2: TESTS ONTOLOGIQUES       │
+│   9 règles métier exécutées         │
+│   → Score précision (ex: 96.2%)     │
+└────────────┬────────────────────────┘
+             ↓
+┌─────────────────────────────────────┐
+│   LAYER 3: DÉCISION MOTEUR          │
+│   Seuils appliqués                  │
+│   → AUTORISER / ANALYSER / BLOQUER  │
+└────────────┬────────────────────────┘
+             ↓
+┌─────────────────────────────────────┐
+│   POST-PROCESSING: JUSTIFICATION    │
+│   Gemini AI génère explication      │
+│   → Texte lisible pour humain       │
+└─────────────────────────────────────┘
+             ↓
+┌─────────────────────────────────────┐
+│   OUTPUT FINAL                      │
+│   ✓ Décision                        │
+│   ✓ Score confiance                 │
+│   ✓ Justification                   │
+│   ✓ Logs + CSV                      │
+└─────────────────────────────────────┘
+```
+
+**Points clés de cette architecture :**
+- ✅ Déterministe jusqu'à la décision
+- ✅ IA générative en post-processing uniquement
+- ✅ Traçabilité complète
+- ✅ Auditable par un tiers
+
+---
+
+## 🏗️ Principes d'Architecture
+
+### Design Pattern : Moteur vs Justification
+
+Ce projet démontre une architecture décisionnelle en 2 blocs :
+
+**Bloc 1 : Moteur Déterministe (Core Engine)**
+- Calcul des métriques
+- Exécution des tests ontologiques
+- Application des seuils de décision
+- **Sortie :** AUTORISER / ANALYSER / BLOQUER
+
+**Bloc 2 : Couche Explicative (AI Layer)**
+- Analyse post-décision via Gemini AI
+- Génération de justifications
+- Contextualisation humaine
+- **Sortie :** Texte explicatif
+
+### Pourquoi Cette Séparation ?
+
+1. **Reproductibilité** : Le moteur produit toujours la même décision pour les mêmes inputs
+2. **Auditabilité** : La logique décisionnelle est vérifiable ligne par ligne
+3. **Gouvernance** : L'IA générative n'a pas le pouvoir de décision
+4. **Régulation** : Conforme aux exigences de transparence du secteur bancaire
+
+### Traçabilité Complète
+
+Chaque décision génère :
+- Logs détaillés (timestamp, métriques, tests, résultat)
+- Export CSV pour audit externe
+- Historique complet dans la base de données
+- Justification Gemini AI horodatée
+
+**Code source complet :** [`server/bankingEngine.ts`](./server/bankingEngine.ts)
+
+---
+
 ## 🧪 Tests
 
 \`\`\`bash

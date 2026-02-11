@@ -250,3 +250,10 @@
 - [x] Remplacer l'URL Manus par l'URL Vultr (http://45.32.151.185/) dans le README ligne 11
 - [x] Ajouter section "Checklist Soumission Hackathon" dans le README après "🔗 Démo en Direct"
 - [x] Créer fichier SUBMISSION_CHECKLIST.md avec les étapes de soumission détaillées (vidéo, Twitter, formulaire)
+
+## Ajout sections architecture README (renforcement crédibilité technique)
+- [x] Ajouter section "🔧 Architecture du Moteur Décisionnel" avec Layer 1-2-3 (Capteurs/Tests/Décision)
+- [x] Ajouter section "Séparation Moteur / IA Générative" expliquant que Gemini n'intervient qu'APRÈS la décision
+- [x] Ajouter section "🏗️ Principes d'Architecture" avec Design Pattern Moteur vs Justification
+- [x] Ajouter diagramme ASCII "📊 Architecture Décisionnelle" montrant le flow complet (INPUT → Layer 1-2-3 → POST-PROCESSING → OUTPUT)
+- [x] Retirer "[ÉCRAN: Dashboard avec métriques visibles]" du script vidéo (partie inutile) → DÉJÀ FAIT (pas dans le README)
