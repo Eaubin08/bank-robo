@@ -153,7 +153,160 @@ export const appRouter = router({
 
         return db.select().from(transactions).orderBy(desc(transactions.createdAt)).limit(input.limit);
       }),
+
+    // Get performance insights (Gemini analysis every 20 transactions)
+    getPerformanceInsights: publicProcedure.query(async () => {
+      const db = await import("./db").then((m) => m.getDb());
+      if (!db) {
+        return {
+          summary: "Base de données non disponible",
+          trends: [],
+          recommendations: [],
+          metrics: {
+            accuracyRate: 0,
+            avgResponseTime: 0,
+            geminiUsageRate: 0,
+            confidenceScore: 0,
+          },
+        };
+      }
+
+      const { transactions } = await import("../drizzle/schema");
+      const { desc } = await import("drizzle-orm");
+
+      const allTransactions = await db.select().from(transactions).orderBy(desc(transactions.createdAt));
+      
+      // Only generate insights if we have at least 20 transactions
+      if (allTransactions.length < 20) {
+        return {
+          summary: `En attente de données (${allTransactions.length}/20 transactions)`,
+          trends: [],
+          recommendations: [],
+          metrics: {
+            accuracyRate: 0,
+            avgResponseTime: 0,
+            geminiUsageRate: 0,
+            confidenceScore: 0,
+          },
+        };
+      }
+
+      // Convert DB transactions to DecisionResult format
+      const { generatePerformanceInsights } = await import("./bankingEngine");
+      const recentTransactions = allTransactions.slice(0, 20).map(tx => ({
+        decision: tx.decision as "AUTORISER" | "ANALYSER" | "BLOQUER",
+        reason: tx.reason,
+        geminiAnalysis: "", // Not stored in DB
+        metrics: {
+          ir: parseFloat(tx.ir),
+          ciz: parseFloat(tx.ciz),
+          dts: parseFloat(tx.dts),
+          tsg: parseFloat(tx.tsg),
+        },
+        ontologicalTests: {
+          timeIsLaw: parseFloat(tx.timeIsLaw),
+          absoluteHoldGate: parseFloat(tx.absoluteHoldGate),
+          zeroToleranceFlag: parseFloat(tx.zeroToleranceFlag),
+          irreversibilityIndex: parseFloat(tx.irreversibilityIndex),
+          conflictZoneIsolation: parseFloat(tx.conflictZoneIsolation),
+          decisionTimeSensitivity: parseFloat(tx.decisionTimeSensitivity),
+          totalSystemGuard: parseFloat(tx.totalSystemGuard),
+          negativeMemoryReflexes: parseFloat(tx.negativeMemoryReflexes),
+          emergentBehaviorWatch: parseFloat(tx.emergentBehaviorWatch),
+        },
+        roiContribution: tx.roiContribution,
+      }));
+
+      return generatePerformanceInsights(recentTransactions, allTransactions.length);
+    }),
+
+    // Analyze continuous trends (Gemini real-time analysis)
+    analyzeTrends: publicProcedure.query(async () => {
+      const db = await import("./db").then((m) => m.getDb());
+      if (!db) return ["Base de données non disponible"];
+
+      const { transactions } = await import("../drizzle/schema");
+      const { desc } = await import("drizzle-orm");
+
+      const recentTransactions = await db.select().from(transactions).orderBy(desc(transactions.createdAt)).limit(10);
+      
+      if (recentTransactions.length < 5) {
+        return ["Pas assez de données pour détecter des tendances"];
+      }
+
+      // Convert to DecisionResult format
+      const { analyzeContinuousTrends } = await import("./bankingEngine");
+      const formattedTransactions = recentTransactions.map(tx => ({
+        decision: tx.decision as "AUTORISER" | "ANALYSER" | "BLOQUER",
+        reason: tx.reason,
+        geminiAnalysis: "",
+        metrics: {
+          ir: parseFloat(tx.ir),
+          ciz: parseFloat(tx.ciz),
+          dts: parseFloat(tx.dts),
+          tsg: parseFloat(tx.tsg),
+        },
+        ontologicalTests: {
+          timeIsLaw: parseFloat(tx.timeIsLaw),
+          absoluteHoldGate: parseFloat(tx.absoluteHoldGate),
+          zeroToleranceFlag: parseFloat(tx.zeroToleranceFlag),
+          irreversibilityIndex: parseFloat(tx.irreversibilityIndex),
+          conflictZoneIsolation: parseFloat(tx.conflictZoneIsolation),
+          decisionTimeSensitivity: parseFloat(tx.decisionTimeSensitivity),
+          totalSystemGuard: parseFloat(tx.totalSystemGuard),
+          negativeMemoryReflexes: parseFloat(tx.negativeMemoryReflexes),
+          emergentBehaviorWatch: parseFloat(tx.emergentBehaviorWatch),
+        },
+        roiContribution: tx.roiContribution,
+      }));
+
+      return analyzeContinuousTrends(formattedTransactions);
+    }),
+
+    // Generate detailed performance report (Gemini on-demand)
+    generateReport: publicProcedure.mutation(async () => {
+      const db = await import("./db").then((m) => m.getDb());
+      if (!db) return "Base de données non disponible";
+
+      const { transactions } = await import("../drizzle/schema");
+      const { desc } = await import("drizzle-orm");
+
+      const allTransactions = await db.select().from(transactions).orderBy(desc(transactions.createdAt));
+      
+      if (allTransactions.length === 0) {
+        return "Aucune transaction disponible pour générer un rapport";
+      }
+
+      // Convert to DecisionResult format
+      const { generateDetailedReport } = await import("./bankingEngine");
+      const formattedTransactions = allTransactions.map(tx => ({
+        decision: tx.decision as "AUTORISER" | "ANALYSER" | "BLOQUER",
+        reason: tx.reason,
+        geminiAnalysis: "",
+        metrics: {
+          ir: parseFloat(tx.ir),
+          ciz: parseFloat(tx.ciz),
+          dts: parseFloat(tx.dts),
+          tsg: parseFloat(tx.tsg),
+        },
+        ontologicalTests: {
+          timeIsLaw: parseFloat(tx.timeIsLaw),
+          absoluteHoldGate: parseFloat(tx.absoluteHoldGate),
+          zeroToleranceFlag: parseFloat(tx.zeroToleranceFlag),
+          irreversibilityIndex: parseFloat(tx.irreversibilityIndex),
+          conflictZoneIsolation: parseFloat(tx.conflictZoneIsolation),
+          decisionTimeSensitivity: parseFloat(tx.decisionTimeSensitivity),
+          totalSystemGuard: parseFloat(tx.totalSystemGuard),
+          negativeMemoryReflexes: parseFloat(tx.negativeMemoryReflexes),
+          emergentBehaviorWatch: parseFloat(tx.emergentBehaviorWatch),
+        },
+        roiContribution: tx.roiContribution,
+      }));
+
+      return generateDetailedReport(formattedTransactions);
+    }),
   }),
 });
 
 export type AppRouter = typeof appRouter;
+

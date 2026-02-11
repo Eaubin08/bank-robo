@@ -127,3 +127,24 @@
 - [x] Changer le ROI de millions d'euros à euros (multiplier par 1000)
 - [x] Mettre à jour l'affichage du ROI dans le frontend (enlever "M €")
 - [ ] Tester sur Vultr
+
+## Enrichissement section Robot avec Gemini
+
+### Backend
+- [ ] Créer fonction `generatePerformanceInsights()` pour résumé toutes les 20 transactions
+- [ ] Créer fonction `analyzeContinuousTrends()` pour analyse en temps réel
+- [ ] Créer fonction `generateDetailedReport()` pour rapport à la demande
+- [ ] Ajouter procédure tRPC `banking.getPerformanceInsights`
+- [ ] Ajouter procédure tRPC `banking.generateReport`
+
+### Frontend
+- [ ] Ajouter carte "Performance Insights" avec résumé Gemini
+- [ ] Ajouter section "Tendances Détectées" avec analyse continue
+- [ ] Ajouter bouton "Générer Rapport Gemini" avec modal
+- [ ] Ajouter compteur de performances (précision, temps de réponse, score de confiance)
+- [ ] Enrichir la section Robot avec ces nouvelles données
+
+### Tests
+- [ ] Tester localement les 3 fonctionnalités Gemini
+- [ ] Déployer sur Vultr
+- [ ] Vérifier l'affichage et les performances

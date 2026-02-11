@@ -83,7 +83,8 @@ function calculateOntologicalTests(
  */
 async function analyzeWithGemini(scenario: Scenario, metrics: DecisionResult["metrics"]): Promise<string> {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const { ENV } = await import("./_core/env");
+    const apiKey = ENV.geminiApiKey;
     if (!apiKey) {
       console.warn("[Gemini] API key not configured");
       return "Analyse Gemini non disponible (clé API manquante)";
@@ -197,4 +198,200 @@ export async function processTransaction(scenario: Scenario): Promise<DecisionRe
     ontologicalTests,
     roiContribution,
   };
+}
+
+/**
+ * Performance Insights Interface
+ */
+export interface PerformanceInsights {
+  summary: string; // Résumé Gemini des performances
+  trends: string[]; // Tendances détectées
+  recommendations: string[]; // Recommandations d'amélioration
+  metrics: {
+    accuracyRate: number; // Taux de précision (%)
+    avgResponseTime: number; // Temps de réponse moyen (ms)
+    geminiUsageRate: number; // Taux d'utilisation Gemini (%)
+    confidenceScore: number; // Score de confiance moyen (%)
+  };
+}
+
+/**
+ * Generate performance insights using Gemini AI (every 20 transactions)
+ */
+export async function generatePerformanceInsights(
+  transactionHistory: DecisionResult[],
+  totalTransactions: number
+): Promise<PerformanceInsights> {
+  try {
+    // Calculate metrics
+    const correctDecisions = transactionHistory.filter(tx => {
+      const avgOntological = Object.values(tx.ontologicalTests).reduce((a, b) => a + b, 0) / 9;
+      return avgOntological >= 0.94;
+    }).length;
+    
+    const accuracyRate = (correctDecisions / transactionHistory.length) * 100;
+    const geminiUsageRate = transactionHistory.filter(tx => !tx.geminiAnalysis.includes("temporairement indisponible")).length / transactionHistory.length * 100;
+    const avgConfidence = transactionHistory.reduce((sum, tx) => {
+      const avgOntological = Object.values(tx.ontologicalTests).reduce((a, b) => a + b, 0) / 9;
+      return sum + avgOntological;
+    }, 0) / transactionHistory.length * 100;
+
+    // Prepare data for Gemini
+    const decisionStats = {
+      AUTORISER: transactionHistory.filter(tx => tx.decision === "AUTORISER").length,
+      ANALYSER: transactionHistory.filter(tx => tx.decision === "ANALYSER").length,
+      BLOQUER: transactionHistory.filter(tx => tx.decision === "BLOQUER").length,
+    };
+
+    const prompt = `Tu es un analyste de performance pour un robot bancaire autonome. Analyse ces statistiques et génère un rapport concis en français:
+
+**Statistiques (${totalTransactions} transactions):**
+- Taux de précision: ${accuracyRate.toFixed(1)}%
+- Utilisation Gemini: ${geminiUsageRate.toFixed(1)}%
+- Score de confiance moyen: ${avgConfidence.toFixed(1)}%
+- Décisions: ${decisionStats.AUTORISER} autorisées, ${decisionStats.ANALYSER} en analyse, ${decisionStats.BLOQUER} bloquées
+
+**Génère:**
+1. Un résumé en 2-3 phrases des performances globales
+2. 3 tendances clés détectées (une phrase chacune)
+3. 2 recommandations d'amélioration (une phrase chacune)
+
+Format JSON:
+{
+  "summary": "...",
+  "trends": ["...", "...", "..."],
+  "recommendations": ["...", "..."]
+}`;
+
+    const { ENV } = await import("./_core/env");
+    const genAI = new GoogleGenerativeAI(ENV.geminiApiKey || "");
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    
+    const result = await model.generateContent(prompt);
+    const response = result.response.text();
+    
+    // Parse JSON response
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return {
+        summary: parsed.summary,
+        trends: parsed.trends,
+        recommendations: parsed.recommendations,
+        metrics: {
+          accuracyRate,
+          avgResponseTime: 150, // Placeholder (ms)
+          geminiUsageRate,
+          confidenceScore: avgConfidence,
+        },
+      };
+    }
+
+    throw new Error("Failed to parse Gemini response");
+  } catch (error) {
+    console.error("[Gemini] Error generating performance insights:", error);
+    return {
+      summary: "Analyse des performances temporairement indisponible",
+      trends: [],
+      recommendations: [],
+      metrics: {
+        accuracyRate: 0,
+        avgResponseTime: 0,
+        geminiUsageRate: 0,
+        confidenceScore: 0,
+      },
+    };
+  }
+}
+
+/**
+ * Analyze continuous trends using Gemini AI (real-time)
+ */
+export async function analyzeContinuousTrends(
+  recentTransactions: DecisionResult[]
+): Promise<string[]> {
+  try {
+    if (recentTransactions.length < 5) {
+      return ["Pas assez de données pour détecter des tendances"];
+    }
+
+    const recentDecisions = recentTransactions.slice(-10).map(tx => ({
+      decision: tx.decision,
+      tsg: tx.metrics.tsg,
+      ir: tx.metrics.ir,
+    }));
+
+    const prompt = `Analyse ces 10 dernières décisions bancaires et identifie 2-3 tendances en français (une phrase chacune):
+
+${JSON.stringify(recentDecisions, null, 2)}
+
+Réponds avec un tableau JSON: ["tendance 1", "tendance 2", "tendance 3"]`;
+
+    const { ENV } = await import("./_core/env");
+    const genAI = new GoogleGenerativeAI(ENV.geminiApiKey || "");
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    
+    const result = await model.generateContent(prompt);
+    const response = result.response.text();
+    
+    // Parse JSON response
+    const jsonMatch = response.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+
+    return ["Analyse des tendances en cours..."];
+  } catch (error) {
+    console.error("[Gemini] Error analyzing trends:", error);
+    return ["Analyse des tendances temporairement indisponible"];
+  }
+}
+
+/**
+ * Generate detailed performance report using Gemini AI (on-demand)
+ */
+export async function generateDetailedReport(
+  transactionHistory: DecisionResult[]
+): Promise<string> {
+  try {
+    const stats = {
+      total: transactionHistory.length,
+      autoriser: transactionHistory.filter(tx => tx.decision === "AUTORISER").length,
+      analyser: transactionHistory.filter(tx => tx.decision === "ANALYSER").length,
+      bloquer: transactionHistory.filter(tx => tx.decision === "BLOQUER").length,
+      avgTSG: transactionHistory.reduce((sum, tx) => sum + tx.metrics.tsg, 0) / transactionHistory.length,
+      avgIR: transactionHistory.reduce((sum, tx) => sum + tx.metrics.ir, 0) / transactionHistory.length,
+      totalROI: transactionHistory.reduce((sum, tx) => sum + tx.roiContribution, 0),
+    };
+
+    const prompt = `Génère un rapport de performance détaillé en français (5-7 phrases) pour ce robot bancaire autonome:
+
+**Statistiques:**
+- Total: ${stats.total} transactions
+- Autorisées: ${stats.autoriser} (${(stats.autoriser/stats.total*100).toFixed(1)}%)
+- En analyse: ${stats.analyser} (${(stats.analyser/stats.total*100).toFixed(1)}%)
+- Bloquées: ${stats.bloquer} (${(stats.bloquer/stats.total*100).toFixed(1)}%)
+- TSG moyen: ${(stats.avgTSG*100).toFixed(1)}%
+- IR moyen: ${(stats.avgIR*100).toFixed(1)}%
+- ROI total: ${stats.totalROI.toLocaleString('fr-FR')} €
+
+Le rapport doit inclure:
+1. Vue d'ensemble des performances
+2. Analyse des décisions
+3. Évaluation des risques
+4. Impact financier (ROI)
+5. Recommandations stratégiques
+
+Réponds en texte brut (pas de JSON).`;
+
+    const { ENV } = await import("./_core/env");
+    const genAI = new GoogleGenerativeAI(ENV.geminiApiKey || "");
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  } catch (error) {
+    console.error("[Gemini] Error generating detailed report:", error);
+    return "Génération du rapport détaillé temporairement indisponible";
+  }
 }

@@ -80,6 +80,34 @@ export default function BankingDashboard() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const processTransactionMutation = trpc.banking.processTransaction.useMutation();
+  
+  // Gemini Performance Insights (auto-refresh every 30s)
+  const { data: performanceInsights, refetch: refetchInsights } = trpc.banking.getPerformanceInsights.useQuery(undefined, {
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+  
+  // Gemini Continuous Trends (auto-refresh every 10s)
+  const { data: continuousTrends, refetch: refetchTrends } = trpc.banking.analyzeTrends.useQuery(undefined, {
+    refetchInterval: 10000, // Refresh every 10 seconds
+  });
+  
+  // Gemini Detailed Report (on-demand)
+  const generateReportMutation = trpc.banking.generateReport.useMutation();
+  const [detailedReport, setDetailedReport] = useState<string | null>(null);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  
+  const handleGenerateReport = async () => {
+    setIsGeneratingReport(true);
+    try {
+      const report = await generateReportMutation.mutateAsync();
+      setDetailedReport(report);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      setDetailedReport("Erreur lors de la génération du rapport");
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
 
   // Process a single transaction
   const processTransaction = async () => {
@@ -478,6 +506,128 @@ export default function BankingDashboard() {
         </CardContent>
       </Card>
 
+
+      {/* Gemini Performance Insights (Option A: Auto-summary every 20 transactions) */}
+      {performanceInsights && performanceInsights.summary !== "En attente de données (0/20 transactions)" && (
+        <Card className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-indigo-500/50 mb-6">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Zap className="w-5 h-5 text-yellow-400" />
+              Performance Insights (Gemini AI)
+            </CardTitle>
+            <CardDescription className="text-gray-300">
+              Résumé automatique toutes les 20 transactions
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-slate-900/50 p-4 rounded-lg border border-indigo-500/30">
+              <h3 className="text-indigo-400 font-semibold mb-2">📊 Résumé</h3>
+              <p className="text-gray-200">{performanceInsights.summary}</p>
+            </div>
+            
+            {performanceInsights.trends.length > 0 && (
+              <div className="bg-slate-900/50 p-4 rounded-lg border border-indigo-500/30">
+                <h3 className="text-indigo-400 font-semibold mb-2">🔍 Tendances Détectées</h3>
+                <ul className="space-y-1 text-gray-200">
+                  {performanceInsights.trends.map((trend, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-yellow-400 mt-1">•</span>
+                      <span>{trend}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {performanceInsights.recommendations.length > 0 && (
+              <div className="bg-slate-900/50 p-4 rounded-lg border border-indigo-500/30">
+                <h3 className="text-indigo-400 font-semibold mb-2">💡 Recommandations</h3>
+                <ul className="space-y-1 text-gray-200">
+                  {performanceInsights.recommendations.map((rec, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-green-400 mt-1">✓</span>
+                      <span>{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-4 gap-3">
+              <div className="bg-green-900/30 p-3 rounded-lg border border-green-500/50">
+                <div className="text-green-400 text-xs font-semibold mb-1">Précision</div>
+                <div className="text-white text-2xl font-bold">{performanceInsights.metrics.accuracyRate.toFixed(1)}%</div>
+              </div>
+              <div className="bg-blue-900/30 p-3 rounded-lg border border-blue-500/50">
+                <div className="text-blue-400 text-xs font-semibold mb-1">Temps Moyen</div>
+                <div className="text-white text-2xl font-bold">{performanceInsights.metrics.avgResponseTime}ms</div>
+              </div>
+              <div className="bg-purple-900/30 p-3 rounded-lg border border-purple-500/50">
+                <div className="text-purple-400 text-xs font-semibold mb-1">Utilisation Gemini</div>
+                <div className="text-white text-2xl font-bold">{performanceInsights.metrics.geminiUsageRate.toFixed(1)}%</div>
+              </div>
+              <div className="bg-yellow-900/30 p-3 rounded-lg border border-yellow-500/50">
+                <div className="text-yellow-400 text-xs font-semibold mb-1">Confiance</div>
+                <div className="text-white text-2xl font-bold">{performanceInsights.metrics.confidenceScore.toFixed(1)}%</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Gemini Continuous Trends (Option B: Real-time analysis) */}
+      {continuousTrends && continuousTrends.length > 0 && continuousTrends[0] !== "Pas assez de données pour détecter des tendances" && (
+        <Card className="bg-gradient-to-r from-cyan-900/50 to-blue-900/50 border-cyan-500/50 mb-6">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Activity className="w-5 h-5 text-cyan-400" />
+              Analyse Continue (Gemini AI)
+            </CardTitle>
+            <CardDescription className="text-gray-300">
+              Insights en temps réel sur les 10 dernières transactions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {continuousTrends.map((trend, i) => (
+                <div key={i} className="bg-slate-900/50 p-3 rounded-lg border border-cyan-500/30 flex items-start gap-3">
+                  <span className="text-cyan-400 font-bold text-lg">{i + 1}</span>
+                  <span className="text-gray-200">{trend}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Gemini Detailed Report (Option C: On-demand) */}
+      <Card className="bg-gradient-to-r from-emerald-900/50 to-teal-900/50 border-emerald-500/50 mb-6">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <Download className="w-5 h-5 text-emerald-400" />
+            Rapport Détaillé (Gemini AI)
+          </CardTitle>
+          <CardDescription className="text-gray-300">
+            Générez un rapport complet de performance à la demande
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button
+            onClick={handleGenerateReport}
+            disabled={isGeneratingReport || transactionCount === 0}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            {isGeneratingReport ? "Génération en cours..." : "📄 Générer Rapport Gemini"}
+          </Button>
+          
+          {detailedReport && (
+            <div className="bg-slate-900/50 p-4 rounded-lg border border-emerald-500/30">
+              <h3 className="text-emerald-400 font-semibold mb-3">📊 Rapport de Performance</h3>
+              <div className="text-gray-200 whitespace-pre-wrap">{detailedReport}</div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Transaction History */}
       <Card className="bg-slate-800/50 border-purple-500/30 mb-6">
